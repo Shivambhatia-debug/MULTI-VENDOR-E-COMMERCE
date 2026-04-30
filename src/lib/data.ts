@@ -1,0 +1,206 @@
+export const products = [
+    {
+        id: "1",
+        name: "Premium Wireless Headphones",
+        price: 299.99,
+        originalPrice: 499.00,
+        description: "High-fidelity audio with active noise cancellation and 30-hour battery life.",
+        category: "Electronics",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop",
+        rating: 4.8,
+        reviews: 124,
+        sku: "PH-101",
+        status: "Active",
+        stock: 12,
+        merchantName: "Tech Haven",
+        merchantRating: 4.9,
+        deliveryTime: "2-3 Days"
+    },
+    {
+        id: "2",
+        name: "Minimalist Leather Watch",
+        price: 149.00,
+        originalPrice: 249.00,
+        description: "Elegant and timeless design featuring genuine Italian leather strap.",
+        category: "Accessories",
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop",
+        rating: 4.5,
+        reviews: 89,
+        sku: "LW-102",
+        status: "Active",
+        stock: 5,
+        merchantName: "Luxe Apparel",
+        merchantRating: 4.7,
+        deliveryTime: "Next Day"
+    },
+    {
+        id: "3",
+        name: "Smart Fitness Tracker",
+        price: 89.50,
+        originalPrice: 125.00,
+        description: "Track your steps, heart rate, and sleep with this sleek waterproof device.",
+        category: "Electronics",
+        image: "https://images.unsplash.com/photo-1575311373937-040b8e3fd0b6?q=80&w=1000&auto=format&fit=crop",
+        rating: 4.2,
+        reviews: 210,
+        sku: "FT-103",
+        status: "Active",
+        stock: 45,
+        merchantName: "Tech Haven",
+        merchantRating: 4.5,
+        deliveryTime: "2-4 Days"
+    },
+    {
+        id: "4",
+        name: "Organic Cotton Hoodie",
+        price: 65.00,
+        description: "Ultra-soft hoodie made from 100% sustainable organic cotton.",
+        category: "Apparel",
+        image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1000&auto=format&fit=crop",
+        rating: 4.9,
+        reviews: 56,
+        sku: "CH-104",
+        status: "Active",
+        stock: 20,
+        merchantName: "Luxe Apparel",
+        merchantRating: 4.7,
+        deliveryTime: "Next Day"
+    },
+    {
+        id: "5",
+        name: "Modern Ceramic Vase",
+        price: 45.00,
+        description: "Handcrafted ceramic vase with a matte finish, perfect for modern interiors.",
+        category: "Home & Living",
+        image: "https://images.unsplash.com/photo-1581783898377-1c85bf937427?q=80&w=1000&auto=format&fit=crop",
+        rating: 4.7,
+        reviews: 42,
+        sku: "CV-105",
+        status: "Active",
+        stock: 15,
+        merchantName: "Urban Decor",
+        merchantRating: 4.8,
+        deliveryTime: "3-5 Days"
+    },
+    {
+        id: "6",
+        name: "Professional Camera Lens",
+        price: 899.00,
+        description: "Ultra-wide angle lens for stunning architectural and landscape photography.",
+        category: "Electronics",
+        image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop",
+        rating: 5.0,
+        reviews: 18,
+        sku: "CL-106",
+        status: "Active",
+        stock: 3,
+        merchantName: "Tech Haven",
+        merchantRating: 4.9,
+        deliveryTime: "Same Day"
+    },
+];
+
+export const stats = [
+    { label: "Total Sales", value: "$12,845", change: "+12.5%", icon: "Briefcase" },
+    { label: "Total Orders", value: "845", change: "+8.2%", icon: "ShoppingCart" },
+    { label: "Active Stores", value: "124", change: "+4.1%", icon: "Store" },
+    { label: "New Customers", value: "320", change: "+15.3%", icon: "Users" },
+];
+
+export const features = [
+    {
+        title: "Fast Setup",
+        description: "Launch your store in under 24 hours with our intuitive store builder.",
+        icon: "Zap",
+    },
+    {
+        title: "Marketplace Synergy",
+        description: "List your products on our global marketplace and reach millions of buyers.",
+        icon: "Globe",
+    },
+    {
+        title: "Advanced Analytics",
+        description: "Get deep insights into your business performance with real-time data.",
+        icon: "BarChart",
+    },
+    {
+        title: "Seamless Payments",
+        description: "Accept payments globally with support for over 100+ currencies and local methods.",
+        icon: "CreditCard",
+    },
+];
+export const adminStats = [
+    { label: "Platform Revenue", value: "$428,210", change: "+14.2%", icon: "DollarSign" },
+    { label: "Total Merchants", value: "1,248", change: "+5.3%", icon: "Building" },
+    { label: "Active Stores", value: "892", change: "+4.1%", icon: "Store" },
+    { label: "Subscription Base", value: "$85,400", change: "+8.9%", icon: "CreditCard" },
+];
+
+export const subscriptionStats = [
+    { name: "Basic", count: 850, revenue: "315,000 QAR", color: "bg-slate-100" },
+    { name: "Premium", count: 320, revenue: "1,440,000 QAR", color: "bg-blue-100" },
+    { name: "Mobile App", count: 70, revenue: "385,000 QAR", color: "bg-indigo-100" },
+];
+
+export const merchants = [
+    {
+        id: "m1",
+        name: "Luxe Apparel",
+        email: "contact@luxeapparel.com",
+        status: "Active",
+        stores: 3,
+        revenue: "12,400 QAR",
+        plan: "Premium",
+        joined: "2026-01-15",
+        slogan: "Premium Fashion for the Modern Soul",
+        coverImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200",
+        rating: 4.9,
+        reviews: 245,
+        category: "Fashion"
+    },
+    {
+        id: "m2",
+        name: "Tech Haven",
+        email: "hello@techhaven.io",
+        status: "Active",
+        stores: 1,
+        revenue: "8,200 QAR",
+        plan: "Basic",
+        joined: "2026-04-10",
+        slogan: "Your Gateway to Future Tech",
+        coverImage: "https://images.unsplash.com/photo-1491933382434-500287f9b54b?q=80&w=1200",
+        rating: 4.7,
+        reviews: 120,
+        category: "Electronics"
+    },
+    {
+        id: "m3",
+        name: "Organic Eats",
+        email: "support@organiceats.com",
+        status: "Active",
+        stores: 5,
+        revenue: "45,200 QAR",
+        plan: "Mobile App",
+        joined: "2025-11-20",
+        slogan: "Pure, Natural, Sustainable",
+        coverImage: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200",
+        rating: 5.0,
+        reviews: 580,
+        category: "Food"
+    },
+    {
+        id: "m4",
+        name: "Urban Decor",
+        email: "info@urbandecor.com",
+        status: "Active",
+        stores: 2,
+        revenue: "8,900 QAR",
+        plan: "Premium",
+        joined: "2026-02-05",
+        slogan: "Elegance for Every Corner",
+        coverImage: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=1200",
+        rating: 4.8,
+        reviews: 95,
+        category: "Home"
+    },
+];

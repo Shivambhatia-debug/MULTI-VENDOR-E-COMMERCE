@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --foreground-rgb: 2, 6, 23;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 248, 250, 252;
+
+  --primary: #000000;
+  --primary-hover: #1e293b;
+  --secondary: #64748b;
+  --accent: #f8fafc;
+  --border: #e2e8f0;
+
+  --shadow-saas: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-saas-hover: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: white;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-slate-950 text-white text-sm font-black uppercase tracking-widest rounded-lg hover:bg-slate-900 transition-all duration-300 shadow-xl active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white border-2 border-slate-900 text-slate-900 text-sm font-black uppercase tracking-widest rounded-lg hover:bg-slate-900 hover:text-white transition-all duration-300 shadow-sm active:scale-95;
+  }
+
+  .card-saas {
+    @apply bg-white border border-slate-200/60 rounded-xl transition-all duration-300;
+    box-shadow: var(--shadow-saas);
+  }
+
+  .card-saas:hover {
+    box-shadow: var(--shadow-saas-hover);
+  }
+
+  .section-padding {
+    @apply py-16 px-4 md:px-8 max-w-7xl mx-auto;
+  }
+
+  .glass-nav {
+    @apply sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50;
+  }
+
+  .pro-sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all font-medium text-sm;
+  }
+
+  .pro-sidebar-item-active {
+    @apply bg-slate-900 text-white font-semibold;
+  }
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-slate-900 via-slate-700 to-slate-900;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
