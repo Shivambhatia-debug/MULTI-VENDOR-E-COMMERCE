@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
         source: '/api/python/:path*',
         destination: process.env.NODE_ENV === 'development'
           ? 'http://localhost:8000/api/:path*'
-          : '/_backend/api/:path*',
+          : '/api/python/:path*', // Let vercel.json handle it in production
       },
     ];
   },
