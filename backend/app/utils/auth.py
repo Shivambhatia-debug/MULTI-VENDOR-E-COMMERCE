@@ -7,10 +7,13 @@ from app.config import settings
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+    # Bcrypt has a 72-byte limit. Truncate just in case to avoid crash.
+    safe_password = plain_password[:72] if plain_password else ""
+    return pwd_context.verify(safe_password, hashed_password)
 
 def get_password_hash(password):
-    return pwd_context.hash(password)
+    safe_password = password[:72] if password else ""
+    return pwd_context.hash(safe_password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
