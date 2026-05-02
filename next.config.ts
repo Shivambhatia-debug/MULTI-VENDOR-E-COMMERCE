@@ -11,10 +11,15 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: true,
   async rewrites() {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const backendUrl = isProduction 
+      ? '/_backend' 
+      : 'http://127.0.0.1:8000';
+
     return [
       {
         source: '/api/python/:path*',
-        destination: 'http://127.0.0.1:8000/api/:path*',
+        destination: `${backendUrl}/api/:path*`,
       },
     ]
   },
