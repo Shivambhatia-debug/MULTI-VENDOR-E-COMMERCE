@@ -14,7 +14,9 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/python/:path*',
-        destination: 'http://localhost:8000/api/:path*',
+        destination: process.env.NODE_ENV === 'development'
+          ? 'http://localhost:8000/api/:path*'
+          : '/_backend/api/:path*',
       },
     ];
   },
