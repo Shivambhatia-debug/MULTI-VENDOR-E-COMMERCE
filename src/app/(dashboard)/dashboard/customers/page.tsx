@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import {
     Users,
@@ -20,10 +21,31 @@ import { useMerchant } from "@/context/MerchantContext";
 
 export default function CustomersPage() {
     const { activePlan } = useMerchant();
-    const customers = [
-        { id: "c1", name: "Ahmed Abdullah", email: "ahmed@example.qa", phone: "+974 5555 1234", orders: 12, totalSpent: "2,450 QAR", lastOrder: "2026-04-20" },
-        { id: "c2", name: "Sara Smith", email: "sara@gmail.com", phone: "+974 3333 5678", orders: 5, totalSpent: "890 QAR", lastOrder: "2026-04-18" },
-    ];
+    const [customers, setCustomers] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchCustomers = async () => {
+            setIsLoading(true);
+            try {
+                const token = localStorage.getItem("golalita_token");
+                const response = await fetch("/api/python/customers", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setCustomers(data);
+                }
+            } catch (err) {
+                console.error("FETCH_CUSTOMERS_ERROR:", err);
+                setError("Failed to sync customer intelligence");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCustomers();
+    }, []);
 
     const isAddonActive = false; // Mock state
 
@@ -114,7 +136,7 @@ export default function CustomersPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50 bg-white">
-                                {customers.map((customer) => (
+                                {customers.length > 0 ? customers.map((customer) => (
                                     <tr key={customer.id} className="hover:bg-slate-50 transition-all group">
                                         <td className="p-8">
                                             <div className="flex flex-col">
@@ -146,7 +168,18 @@ export default function CustomersPage() {
                                             </button>
                                         </td>
                                     </tr>
-                                ))}
+                                )) : (
+                                    <tr>
+                                        <td colSpan={5} className="p-32 text-center">
+                                            <div className="flex flex-col items-center gap-4 opacity-30">
+                                                <Users size={48} className="text-slate-300" />
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+                                                    {isLoading ? "Synchronizing Entity Streams..." : "No Customer Data in Registry"}
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>

@@ -38,6 +38,7 @@ export default function NewProductPage() {
         category: "Electronics",
         description: "",
         image: "",
+        images: [] as string[],
         stock: "",
         sku: "",
         status: "Active"
@@ -49,14 +50,39 @@ export default function NewProductPage() {
     };
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, image: reader.result as string }));
-            };
-            reader.readAsDataURL(file);
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            const readers = files.map(file => {
+                return new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            Promise.all(readers).then(base64Images => {
+                setFormData(prev => {
+                    const newImages = [...prev.images, ...base64Images];
+                    return {
+                        ...prev,
+                        images: newImages,
+                        image: newImages[0] || ""
+                    };
+                });
+            });
         }
+    };
+
+    const removeImage = (index: number) => {
+        setFormData(prev => {
+            const newImages = [...prev.images];
+            newImages.splice(index, 1);
+            return {
+                ...prev,
+                images: newImages,
+                image: newImages[0] || ""
+            };
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -206,64 +232,88 @@ export default function NewProductPage() {
                         </div>
 
                         <div className="card-saas p-8 shadow-xl border-slate-200/50">
-                            <div className="flex justify-between items-center mb-8">
-                                <h2 className="text-xs font-black text-slate-950 uppercase tracking-[0.2em] flex items-center gap-3">
-                                    <ImageIcon size={16} className="text-slate-400" />
-                                    Product Image
-                                </h2>
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="px-4 py-2 bg-slate-950 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 transition-all flex items-center gap-2 active:scale-95 shadow-lg"
-                                >
-                                    <Upload size={12} />
-                                    Open Gallery
-                                </button>
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleImageUpload}
-                                    accept="image/*"
-                                    className="hidden"
-                                />
-                            </div>
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Or Paste Image URL</label>
-                                    <div className="relative group">
-                                        <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-950 transition-colors" size={18} />
-                                        <input
-                                            name="image"
-                                            value={formData.image.startsWith('data:') ? '' : formData.image}
-                                            onChange={handleChange}
-                                            type="url"
-                                            placeholder="Paste image link here..."
-                                            className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-bold focus:bg-white focus:border-slate-300 outline-none transition-all placeholder:text-slate-300"
-                                        />
+                            <h2 className="text-xs font-black text-slate-950 uppercase tracking-[0.2em] mb-8 flex items-center gap-3">
+                                <ImageIcon size={16} className="text-slate-400" />
+                                Product Visuals
+                            </h2>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Primary Image Slot */}
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Primary Image (Main)</label>
+                                    <div 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="relative aspect-square rounded-[2rem] border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group overflow-hidden"
+                                    >
+                                        {formData.images[0] ? (
+                                            <>
+                                                <img src={formData.images[0]} className="w-full h-full object-cover" alt="Main" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Change Photo</span>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-center space-y-4">
+                                                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
+                                                    <Upload size={24} className="text-slate-300" />
+                                                </div>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Upload Main Image</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                <div
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center cursor-pointer hover:border-slate-400 transition-all group"
-                                >
-                                    {formData.image ? (
-                                        <div className="relative h-48 w-full rounded-xl overflow-hidden shadow-inner group-hover:opacity-90 transition-opacity">
-                                            <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <span className="text-[9px] font-black text-white uppercase tracking-[0.3em] bg-slate-950/40 px-4 py-2 rounded-full backdrop-blur-sm">Change Image</span>
+
+                                {/* Extra Images Grid */}
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Gallery Images (Max 4)</label>
+                                    <div className="grid grid-cols-2 gap-4 h-[calc(100%-2rem)]">
+                                        {[1, 2, 3, 4].map((idx) => (
+                                            <div 
+                                                key={idx}
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="relative aspect-square rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all group overflow-hidden"
+                                            >
+                                                {formData.images[idx] ? (
+                                                    <>
+                                                        <img src={formData.images[idx]} className="w-full h-full object-cover" alt={`Extra ${idx}`} />
+                                                        <button 
+                                                            type="button"
+                                                            onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                                                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <Plus size={14} className="rotate-45" />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <Plus size={20} className="text-slate-200 group-hover:text-blue-400 transition-colors" />
+                                                )}
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div className="py-12 space-y-4">
-                                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-slate-100 group-hover:scale-110 transition-transform duration-500">
-                                                <Upload size={24} className="text-slate-400" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-black text-slate-950 uppercase tracking-widest">Select from Gallery</p>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 leading-relaxed opacity-60">High-resolution PNG, JPG or WEBP preferred</p>
-                                            </div>
-                                        </div>
-                                    )}
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleImageUpload}
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                            />
+
+                            <div className="mt-8 pt-8 border-t border-slate-100 space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Alternative: Primary Image URL</label>
+                                <div className="relative group">
+                                    <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-950 transition-colors" size={18} />
+                                    <input
+                                        name="image"
+                                        value={formData.image.startsWith('data:') ? '' : formData.image}
+                                        onChange={handleChange}
+                                        type="url"
+                                        placeholder="Paste high-res image link here..."
+                                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-bold focus:bg-white focus:border-slate-300 outline-none transition-all placeholder:text-slate-300"
+                                    />
                                 </div>
                             </div>
                         </div>

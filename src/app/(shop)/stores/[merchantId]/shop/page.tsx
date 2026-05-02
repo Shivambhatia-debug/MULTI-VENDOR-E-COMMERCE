@@ -3,11 +3,10 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
-import { products, merchants } from "@/lib/data";
-import { Search, SlidersHorizontal, Package, LayoutGrid, ArrowLeft } from "lucide-react";
+import { Search, SlidersHorizontal, Package, LayoutGrid, ArrowLeft, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 
 export default function MerchantShopPage() {
@@ -15,18 +14,45 @@ export default function MerchantShopPage() {
     const router = useRouter();
     const merchantId = params.merchantId as string;
 
-    const merchant = merchants.find(m => m.id === merchantId);
+    const [storeData, setStoreData] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const merchantProducts = useMemo(() => {
-        return products.filter(p => {
-            const matchesMerchant = p.merchantName === merchant?.name;
-            const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesMerchant && matchesSearch;
-        });
-    }, [merchant, searchQuery]);
+    useEffect(() => {
+        const fetchStoreData = async () => {
+            try {
+                const res = await fetch(`/api/python/public/stores/${merchantId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setStoreData(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch store data:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStoreData();
+    }, [merchantId]);
 
-    if (!merchant) return <div>Store not found</div>;
+    const merchantProducts = useMemo(() => {
+        if (!storeData || !storeData.products) return [];
+        return storeData.products.filter((p: any) => {
+            const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesSearch;
+        });
+    }, [storeData, searchQuery]);
+
+    if (isLoading) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center bg-white">
+                <Loader2 className="animate-spin text-slate-950 mb-4" size={40} />
+                <p className="text-[10px] font-black uppercase tracking-[0.4em]">Curating Catalog...</p>
+            </div>
+        );
+    }
+
+    if (!storeData || storeData.error) return <div>Store not found</div>;
 
     return (
         <main className="min-h-screen bg-[#f1f3f6]">
@@ -44,7 +70,7 @@ export default function MerchantShopPage() {
                                 <ArrowLeft size={18} />
                             </button>
                             <div>
-                                <h1 className="text-2xl font-black text-slate-950 uppercase tracking-tighter italic leading-none">{merchant.name} Catalog</h1>
+                                <h1 className="text-2xl font-black text-slate-950 uppercase tracking-tighter italic leading-none">{storeData.config.store_name} Catalog</h1>
                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Direct Brand Access</p>
                             </div>
                         </div>
@@ -72,7 +98,7 @@ export default function MerchantShopPage() {
             {/* Catalog Grid */}
             <div className="section-padding py-16">
                 <div className="flex items-center gap-4 mb-10">
-                    <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-white">
+                    <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: storeData.config.primary_color }}>
                         <LayoutGrid size={20} />
                     </div>
                     <div>
@@ -83,7 +109,7 @@ export default function MerchantShopPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {merchantProducts.map((product) => (
+                    {merchantProducts.map((product: any) => (
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </div>
@@ -95,7 +121,7 @@ export default function MerchantShopPage() {
                         </div>
                         <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">No Items Found</h3>
                         <p className="text-sm text-slate-400 font-bold max-w-xs mx-auto">This merchant currently has no items matching your search or collection.</p>
-                        <button onClick={() => setSearchQuery("")} className="mt-8 px-8 py-3 bg-slate-950 text-white rounded-full text-[10px] font-black uppercase tracking-widest">Clear Filters</button>
+                        <button onClick={() => setSearchQuery("")} className="mt-8 px-8 py-3 bg-slate-950 text-white rounded-full text-[10px] font-black uppercase tracking-widest" style={{ backgroundColor: storeData.config.primary_color }}>Clear Filters</button>
                     </div>
                 )}
             </div>

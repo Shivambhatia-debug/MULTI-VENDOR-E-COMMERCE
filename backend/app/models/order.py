@@ -4,6 +4,8 @@ from datetime import datetime
 
 class OrderBase(BaseModel):
     customer_name: str
+    customer_email: str
+    customer_phone: Optional[str] = None
     items: int
     total: str
     status: str = "Processing"

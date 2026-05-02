@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import {
     Tag,
@@ -17,10 +18,28 @@ import { useMerchant } from "@/context/MerchantContext";
 
 export default function CouponsPage() {
     const { activePlan } = useMerchant();
-    const coupons = [
-        { id: "v1", code: "WELCOME10", type: "Percentage", value: "10%", usage: "124", expiry: "2026-12-31", status: "Active" },
-        { id: "v2", code: "RAMADAN25", type: "Fixed Amount", value: "25 QAR", usage: "450", expiry: "2026-05-10", status: "Expired" },
-    ];
+    const [coupons, setCoupons] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                const token = localStorage.getItem("golalita_token");
+                const response = await fetch("/api/python/merchants/coupons", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setCoupons(data);
+                }
+            } catch (err) {
+                console.error("FETCH_COUPONS_ERROR:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCoupons();
+    }, []);
 
     const isAddonActive = false;
 
@@ -76,7 +95,7 @@ export default function CouponsPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {coupons.map((coupon) => (
+                        {coupons.length > 0 ? coupons.map((coupon) => (
                             <div key={coupon.id} className="card-saas overflow-hidden flex flex-col">
                                 <div className="p-6">
                                     <div className="flex justify-between items-start mb-6">
@@ -101,7 +120,18 @@ export default function CouponsPage() {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )) : !isLoading && (
+                            <div className="col-span-full py-20 text-center opacity-30">
+                               <Tag size={48} className="mx-auto mb-4 text-slate-300" />
+                               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">No active promotions in registry</p>
+                            </div>
+                        )}
+
+                        {isLoading && (
+                            <div className="col-span-full py-20 text-center opacity-30 animate-pulse">
+                               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Fetching Promotion Streams...</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

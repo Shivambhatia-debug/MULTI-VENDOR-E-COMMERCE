@@ -3,14 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
 from .database import connect_to_mongo, close_mongo_connection
-from .routes import auth, products, orders, dashboard, merchants
+from .routes import auth, products, orders, dashboard, merchants, public_stores
+from .routes.store_config import router as store_config_router
 
-app = FastAPI(title="Golalita E-Commerce API", redirect_slashes=False)
+app = FastAPI(title="Golalita E-Commerce API")
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Temporarily allow all for debugging
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,25 +20,36 @@ app.add_middleware(
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
+    print(f">>> {request.method} {request.url.path}")
     try:
         response = await call_next(request)
+        duration = time.time() - start_time
+        print(f"<<< {request.method} {request.url.path} -> {response.status_code} ({duration:.2f}s)")
         return response
     except Exception as e:
-        print(f"DEBUG: ERROR {request.method} {request.url} - {str(e)}")
+        print(f"!!! ERROR {request.method} {request.url.path} - {str(e)}")
         import traceback
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
 # Include Routers
+app.include_router(store_config_router, prefix="/api/store-config")
 app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(dashboard.router)
 app.include_router(merchants.router)
+app.include_router(public_stores.router)
 
 @app.on_event("startup")
 async def startup_event():
     await connect_to_mongo()
+    # Print all registered routes for debugging
+    print("\n=== REGISTERED ROUTES ===")
+    for route in app.routes:
+        if hasattr(route, 'methods'):
+            print(f"  {route.methods} {route.path}")
+    print("=========================\n")
 
 @app.on_event("shutdown")
 async def shutdown_event():

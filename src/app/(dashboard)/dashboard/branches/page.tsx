@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { stats } from "@/lib/data";
 import {
@@ -17,9 +18,28 @@ import { useMerchant } from "@/context/MerchantContext";
 
 export default function BranchesPage() {
     const { activePlan, planLimits } = useMerchant();
-    const branches = [
-        { id: "b1", name: "Main Store - Doha", city: "Doha", address: "Al Corniche St, Doha, Qatar", phone: "+974 4444 0000", hours: "9:00 AM - 10:00 PM", status: "Active" },
-    ];
+    const [branches, setBranches] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+                const token = localStorage.getItem("golalita_token");
+                const response = await fetch("/api/python/merchants/branches", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setBranches(data);
+                }
+            } catch (err) {
+                console.error("FETCH_BRANCHES_ERROR:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchBranches();
+    }, []);
 
     const branchLimit = planLimits.branches;
     const isLimitReached = branches.length >= branchLimit;
@@ -62,7 +82,7 @@ export default function BranchesPage() {
 
                 {/* Branch Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {branches.map((branch) => (
+                    {branches.length > 0 ? branches.map((branch) => (
                         <div key={branch.id} className="card-saas p-6 group transition-all hover:border-blue-200">
                             <div className="flex justify-between items-start mb-6">
                                 <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
@@ -105,7 +125,18 @@ export default function BranchesPage() {
                                 </button>
                             </div>
                         </div>
-                    ))}
+                    )) : !isLoading && (
+                        <div className="col-span-full py-20 text-center opacity-30">
+                           <MapPin size={48} className="mx-auto mb-4 text-slate-300" />
+                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">No Active Branches in Registry</p>
+                        </div>
+                    )}
+
+                    {isLoading && (
+                         <div className="col-span-full py-20 text-center opacity-30 animate-pulse">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Synchronizing Spatial Data...</p>
+                         </div>
+                    )}
 
                     {/* Locked Placeholder for Basic */}
                     {activePlan === "Basic" && (

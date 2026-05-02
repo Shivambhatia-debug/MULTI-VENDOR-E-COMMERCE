@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import Sidebar from "@/components/dashboard/Sidebar";
 import {
     BarChart3,
@@ -18,6 +20,37 @@ import {
 } from "lucide-react";
 
 export default function AnalyticsPage() {
+    const [stats, setStats] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const token = localStorage.getItem("golalita_token");
+                const response = await fetch("/api/python/dashboard/stats", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setStats(data);
+                }
+            } catch (err) {
+                console.error("FETCH_STATS_ERROR:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
+
+    // Map stats to display format
+    const performanceMatrices = [
+        { label: "Gross Liquidity", value: stats.find(s => s.label === "Total Sales")?.value || "0 QAR", change: "+0%", trend: "up", icon: DollarSign, color: "text-slate-950", bg: "bg-slate-950 text-white" },
+        { label: "Entity Orders", value: stats.find(s => s.label === "Total Orders")?.value || "0", change: "+0%", trend: "up", icon: ShoppingCart, color: "text-emerald-600", bg: "bg-white border border-slate-100" },
+        { label: "New Acquisitions", value: stats.find(s => s.label === "New Customers")?.value || "0", change: "+0%", trend: "up", icon: Users, color: "text-indigo-600", bg: "bg-white border border-slate-100" },
+        { label: "Active Protocol", value: stats.find(s => s.label === "Active Products")?.value || "0", change: "+0%", trend: "up", icon: TrendingUp, color: "text-rose-600", bg: "bg-white border border-slate-100" },
+    ];
+
     return (
         <div className="min-h-screen bg-slate-50 flex">
             <Sidebar />
@@ -44,12 +77,7 @@ export default function AnalyticsPage() {
 
                 {/* Performance Matrices */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-                    {[
-                        { label: "Gross Liquidity", value: "QAR 45,210", change: "+12.5%", trend: "up", icon: DollarSign, color: "text-slate-950", bg: "bg-slate-950 text-white" },
-                        { label: "Entity Orders", value: "1,248", change: "+8.2%", trend: "up", icon: ShoppingCart, color: "text-emerald-600", bg: "bg-white border border-slate-100" },
-                        { label: "New Acquisitions", value: "342", change: "+15.3%", trend: "up", icon: Users, color: "text-indigo-600", bg: "bg-white border border-slate-100" },
-                        { label: "Avg. Transaction", value: "QAR 185", change: "-2.1%", trend: "down", icon: TrendingUp, color: "text-rose-600", bg: "bg-white border border-slate-100" },
-                    ].map((m) => (
+                    {performanceMatrices.map((m) => (
                         <div key={m.label} className={`card-saas p-8 flex flex-col justify-between h-40 group ${m.bg === 'bg-slate-950 text-white' ? 'bg-slate-950 text-white border-transparent shadow-2xl' : 'hover:border-slate-400 shadow-xl'}`}>
                             <div className="flex justify-between items-start">
                                 <div className={`p-2.5 rounded-xl border border-white/10 ${m.bg === 'bg-slate-950 text-white' ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-950 group-hover:text-white transition-all duration-500'}`}>
@@ -62,7 +90,7 @@ export default function AnalyticsPage() {
                             </div>
                             <div>
                                 <p className={`text-[9px] font-black uppercase tracking-[0.2em] mb-2 ${m.bg === 'bg-slate-950 text-white' ? 'text-slate-400' : 'text-slate-400'}`}>{m.label}</p>
-                                <p className="text-2xl font-black tracking-tighter leading-none">{m.value}</p>
+                                <p className="text-2xl font-black tracking-tighter leading-none">{isLoading ? "..." : m.value}</p>
                             </div>
                         </div>
                     ))}

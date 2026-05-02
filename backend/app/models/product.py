@@ -7,7 +7,8 @@ class ProductBase(BaseModel):
     originalPrice: Optional[float] = None
     description: str
     category: str
-    image: str
+    image: str = ""
+    images: List[str] = []
     rating: float = 0.0
     reviews: int = 0
     sku: str
@@ -27,6 +28,7 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     category: Optional[str] = None
     image: Optional[str] = None
+    images: Optional[List[str]] = None
     status: Optional[str] = None
     stock: Optional[int] = None
 
