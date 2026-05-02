@@ -16,7 +16,13 @@ const nextConfig: NextConfig = {
         source: '/api/python/:path*',
         destination: process.env.NODE_ENV === 'development'
           ? 'http://localhost:8000/api/:path*'
-          : '/api/python/:path*', // Let vercel.json handle it in production
+          : 'https://golalita-backend.onrender.com/api/:path*',
+      },
+      {
+        source: '/_backend/:path*',
+        destination: process.env.NODE_ENV === 'development'
+          ? 'http://localhost:8000/api/:path*'
+          : 'https://golalita-backend.onrender.com/api/:path*',
       },
     ];
   },
