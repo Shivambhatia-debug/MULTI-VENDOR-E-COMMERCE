@@ -6,7 +6,7 @@ from .database import connect_to_mongo, close_mongo_connection
 from .routes import auth, products, orders, dashboard, merchants, public_stores
 from .routes.store_config import router as store_config_router
 
-app = FastAPI(title="Golalita E-Commerce API", root_path="/_backend")
+app = FastAPI(title="Golalita E-Commerce API")
 
 # Configure CORS
 app.add_middleware(
@@ -54,6 +54,16 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     await close_mongo_connection()
+
+@app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def catch_all(request: Request, full_path: str):
+    return {
+        "message": "Debug: Route not found",
+        "path": full_path,
+        "method": request.method,
+        "root_path": request.scope.get("root_path"),
+        "headers": dict(request.headers)
+    }
 
 @app.get("/")
 async def root():
