@@ -7,3 +7,5 @@ passlib[bcrypt]
 python-dotenv
 python-multipart
 pymongo
+gunicorn
+uvicorn

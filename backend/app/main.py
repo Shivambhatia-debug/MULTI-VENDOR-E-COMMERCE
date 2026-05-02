@@ -11,7 +11,7 @@ app = FastAPI(title="Golalita E-Commerce API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # In production, replace with your Vercel URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
