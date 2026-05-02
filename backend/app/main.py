@@ -6,7 +6,7 @@ from .database import connect_to_mongo, close_mongo_connection
 from .routes import auth, products, orders, dashboard, merchants, public_stores
 from .routes.store_config import router as store_config_router
 
-app = FastAPI(title="Golalita E-Commerce API")
+app = FastAPI(title="Golalita E-Commerce API", root_path="/_backend")
 
 # Configure CORS
 app.add_middleware(
