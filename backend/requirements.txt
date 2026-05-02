@@ -9,3 +9,4 @@ python-multipart
 pymongo
 gunicorn
 uvicorn
+email-validator
