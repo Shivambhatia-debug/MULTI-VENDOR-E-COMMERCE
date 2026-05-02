@@ -78,17 +78,30 @@ async def register(user_in: UserCreate, business_name: Optional[str] = None):
 @router.post("/login")
 @router.post("/login/")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    db = await get_database()
-    user = await db.users.find_one({"email": form_data.username})
-    if not user or not verify_password(form_data.password, user["password_hash"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    
-    access_token = create_access_token(data={"sub": user["email"]})
-    return {"access_token": access_token, "token_type": "bearer"}
+    try:
+        db = await get_database()
+        user = await db.users.find_one({"email": form_data.username})
+        
+        if not user:
+            print(f"LOGIN FAILED: User {form_data.username} not found")
+            raise HTTPException(status_code=401, detail="Incorrect email or password")
+            
+        password_hash = user.get("password_hash")
+        if not password_hash:
+            # Fallback for old schema where it might be just 'password'
+            password_hash = user.get("password")
+            
+        if not password_hash or not verify_password(form_data.password, password_hash):
+            print(f"LOGIN FAILED: Password mismatch for {form_data.username}")
+            raise HTTPException(status_code=401, detail="Incorrect email or password")
+        
+        access_token = create_access_token(data={"sub": user["email"]})
+        return {"access_token": access_token, "token_type": "bearer"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"LOGIN CRITICAL ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/me", response_model=UserOut)
 async def read_users_me(current_user: dict = Depends(get_current_user)):
