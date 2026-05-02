@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
                         </div>
 
                         <div className="grid grid-cols-5 gap-3">
-                            {(product.images && product.images.length > 0 ? product.images : [product.image]).slice(0, 5).map((img, i) => (
+                            {((product as any).images && (product as any).images.length > 0 ? (product as any).images : [product.image]).slice(0, 5).map((img: string, i: number) => (
                                 <div 
                                     key={i} 
                                     onClick={() => setSelectedImage(img)}
