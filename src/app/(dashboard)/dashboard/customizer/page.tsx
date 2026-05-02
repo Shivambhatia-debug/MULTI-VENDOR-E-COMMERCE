@@ -63,6 +63,7 @@ export default function CustomizerEditorialPage() {
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
     const [selectedSize, setSelectedSize] = useState("M");
+    const [activeProductImage, setActiveProductImage] = useState<string | null>(null);
     const [checkoutStep, setCheckoutStep] = useState<"cart" | "checkout" | "success">("cart");
     const [selectedPayment, setSelectedPayment] = useState("card");
     const [isCouponApplied, setIsCouponApplied] = useState(false);
@@ -686,14 +687,20 @@ export default function CustomizerEditorialPage() {
                                                     {/* Left: Image Gallery */}
                                                     <div className="w-full md:w-[50%] bg-slate-50 relative shrink-0 overflow-hidden p-4 md:p-8 flex flex-col justify-center items-center">
                                                         <div className="w-full aspect-[4/5] relative flex items-center justify-center overflow-hidden rounded-3xl shadow-xl">
-                                                            <img src={selectedProduct.image} className="w-full h-full object-cover" />
+                                                            <img src={activeProductImage || selectedProduct.image} className="w-full h-full object-cover transition-all duration-500" />
                                                             <div className="absolute top-4 left-4">
                                                                 <span className="bg-blue-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest italic shadow-lg">New Arrival</span>
                                                             </div>
                                                         </div>
                                                         <div className="hidden md:flex gap-2 mt-4">
-                                                            {[1, 2, 3].map((i) => (
-                                                                <div key={i} className={`w-10 h-10 rounded-lg border-2 ${i === 1 ? 'border-blue-600' : 'border-slate-200'}`} />
+                                                            {(selectedProduct.images && selectedProduct.images.length > 0 ? selectedProduct.images : [selectedProduct.image]).slice(0, 5).map((img: string, i: number) => (
+                                                                <div 
+                                                                    key={i} 
+                                                                    onClick={() => setActiveProductImage(img)}
+                                                                    className={`w-10 h-10 rounded-lg border-2 transition-all cursor-pointer overflow-hidden ${activeProductImage === img || (!activeProductImage && i === 0) ? 'border-blue-600' : 'border-slate-200 opacity-50'}`}
+                                                                >
+                                                                    <img src={img} className="w-full h-full object-cover" />
+                                                                </div>
                                                             ))}
                                                         </div>
                                                     </div>

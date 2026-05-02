@@ -6,7 +6,7 @@ import {
     ShoppingCart, Plus, ChevronRight, Menu, 
     ImageIcon, Box, ShieldCheck, Sparkles, Globe,
     ArrowRight, CheckCircle2, CreditCard, MapPin, Truck,
-    ChevronLeft, Lock, Tag, Smartphone, Wallet, Zap
+    ChevronLeft, Lock, Tag, Smartphone, Wallet, Zap, Star
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,6 +24,7 @@ export default function MerchantLandingPage() {
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
     const [selectedSize, setSelectedSize] = useState("M");
+    const [activeImage, setActiveImage] = useState<string | null>(null);
     const [selectedPayment, setSelectedPayment] = useState("card");
     const [couponCode, setCouponCode] = useState("");
     const [isCouponApplied, setIsCouponApplied] = useState(false);
@@ -391,28 +392,28 @@ export default function MerchantLandingPage() {
                         <div className="flex flex-col md:flex-row h-full">
                             {/* Left: Image Gallery */}
                             <div className="w-full md:w-[55%] bg-slate-50 relative shrink-0 overflow-y-auto scrollbar-hide">
-                                <div className="w-full aspect-[4/5] md:aspect-auto md:h-full relative overflow-hidden p-6 md:p-12">
-                                    <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-                                        {(selectedProduct.images && selectedProduct.images.length > 0 ? selectedProduct.images : [selectedProduct.image]).map((img: string, idx: number) => (
-                                            <div key={idx} className="w-full h-full shrink-0 snap-center relative flex items-center justify-center">
-                                                {img ? (
-                                                    <img src={img} alt={`${selectedProduct.name} ${idx + 1}`} className="w-full h-full object-cover rounded-[2rem] shadow-2xl" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center"><ImageIcon className="text-slate-300" size={64} /></div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="absolute top-10 left-10 flex flex-col gap-2">
-                                        <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-[0.2em] italic shadow-xl w-fit">New Arrival</span>
+                                <div className="w-full aspect-[4/5] md:aspect-auto md:h-[65vh] relative overflow-hidden p-6 md:p-12">
+                                    <div className="w-full h-full relative flex items-center justify-center">
+                                        <img 
+                                            src={activeImage || selectedProduct.image} 
+                                            alt={selectedProduct.name} 
+                                            className="w-full h-full object-cover rounded-[2rem] shadow-2xl transition-all duration-500" 
+                                        />
+                                        <div className="absolute top-10 left-10 flex flex-col gap-2">
+                                            <span className="bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-[0.2em] italic shadow-xl w-fit">New Arrival</span>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                {/* Thumbnails (Simulated) */}
+                                {/* Thumbnails */}
                                 <div className="hidden md:flex gap-4 p-12 pt-0">
-                                    {[1, 2, 3, 4].map((i) => (
-                                        <div key={i} className={`w-20 h-20 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden ${i === 1 ? 'border-blue-600' : 'border-slate-100 hover:border-slate-200'}`}>
-                                            <img src={selectedProduct.image} className="w-full h-full object-cover opacity-50" />
+                                    {(selectedProduct.images && selectedProduct.images.length > 0 ? selectedProduct.images : [selectedProduct.image]).slice(0, 5).map((img: string, i: number) => (
+                                        <div 
+                                            key={i} 
+                                            onClick={() => setActiveImage(img)}
+                                            className={`w-20 h-20 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden ${activeImage === img || (!activeImage && i === 0) ? 'border-blue-600 shadow-lg scale-95' : 'border-slate-100 hover:border-slate-200'}`}
+                                        >
+                                            <img src={img} className={`w-full h-full object-cover ${activeImage === img || (!activeImage && i === 0) ? 'opacity-100' : 'opacity-50'}`} />
                                         </div>
                                     ))}
                                 </div>

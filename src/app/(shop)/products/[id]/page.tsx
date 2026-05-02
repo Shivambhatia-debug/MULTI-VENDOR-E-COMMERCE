@@ -35,6 +35,7 @@ export default function ProductDetailPage() {
     const product = products.find(p => p.id === id);
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [selectedSize, setSelectedSize] = useState("M");
+    const [selectedImage, setSelectedImage] = useState<string | null>(product?.image || null);
 
     const similarProducts = useMemo(() => {
         if (!product) return [];
@@ -75,9 +76,9 @@ export default function ProductDetailPage() {
                         animate={{ opacity: 1, x: 0 }}
                         className="space-y-4"
                     >
-                        <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 group">
+                        <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 group">
                             <Image
-                                src={product.image}
+                                src={selectedImage || product.image}
                                 alt={product.name}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-700"
@@ -95,10 +96,14 @@ export default function ProductDetailPage() {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-3">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className={`aspect-square rounded-xl bg-slate-50 border-2 transition-all cursor-pointer overflow-hidden ${i === 1 ? "border-blue-600" : "border-transparent opacity-50 hover:opacity-100"}`}>
-                                    <Image src={product.image} alt={product.name} width={150} height={150} className="object-cover w-full h-full" />
+                        <div className="grid grid-cols-5 gap-3">
+                            {(product.images && product.images.length > 0 ? product.images : [product.image]).slice(0, 5).map((img, i) => (
+                                <div 
+                                    key={i} 
+                                    onClick={() => setSelectedImage(img)}
+                                    className={`aspect-square rounded-xl bg-slate-50 border-2 transition-all cursor-pointer overflow-hidden ${selectedImage === img || (!selectedImage && i === 0) ? "border-blue-600 shadow-lg scale-95" : "border-transparent opacity-50 hover:opacity-100"}`}
+                                >
+                                    <img src={img} alt={`${product.name} ${i}`} className="object-cover w-full h-full" />
                                 </div>
                             ))}
                         </div>

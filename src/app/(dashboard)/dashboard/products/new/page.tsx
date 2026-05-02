@@ -62,7 +62,7 @@ export default function NewProductPage() {
 
             Promise.all(readers).then(base64Images => {
                 setFormData(prev => {
-                    const newImages = [...prev.images, ...base64Images];
+                    const newImages = [...prev.images, ...base64Images].slice(0, 5);
                     return {
                         ...prev,
                         images: newImages,
