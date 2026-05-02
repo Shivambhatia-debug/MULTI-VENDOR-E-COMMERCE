@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard, Users, Store, Settings,
-    Bell, ShieldCheck, BarChart3, LogOut, Menu, X
+    Bell, ShieldCheck, BarChart3, LogOut, Menu, X, Sparkles
 } from "lucide-react";
 import { useState } from "react";
 
@@ -12,6 +12,7 @@ const menuItems = [
     { label: "Overview", icon: LayoutDashboard, href: "/admin" },
     { label: "Merchants", icon: Users, href: "/admin/merchants" },
     { label: "Global Stores", icon: Store, href: "/admin/stores" },
+    { label: "Marketplace", icon: Sparkles, href: "/admin/marketplace" },
     { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
     { label: "Verification", icon: ShieldCheck, href: "/admin/verification" },
     { label: "Settings", icon: Settings, href: "/admin/settings" },

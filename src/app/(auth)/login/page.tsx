@@ -54,7 +54,12 @@ export default function LoginPage() {
             const userData = await userResponse.json();
 
             contextLogin(access_token, userData);
-            router.push("/dashboard");
+            
+            if (userData.role === "admin") {
+                router.push("/admin");
+            } else {
+                router.push("/dashboard");
+            }
 
         } catch (err: any) {
             setError(err.message);

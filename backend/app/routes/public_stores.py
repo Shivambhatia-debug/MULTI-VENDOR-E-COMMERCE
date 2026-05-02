@@ -10,7 +10,7 @@ router = APIRouter(prefix="/api/public", tags=["public-stores"])
 async def list_published_stores():
     db = await get_database()
 
-    configs = await db.store_configs.find({"is_published": True}).to_list(None)
+    configs = await db.store_configs.find({"is_published": True, "is_approved": True}).to_list(None)
     stores = []
 
     for config in configs:
@@ -57,7 +57,7 @@ async def get_store_by_subdomain(subdomain: str):
     """Resolve a store by its subdomain slug (e.g., 'lux-apparel')"""
     db = await get_database()
 
-    config = await db.store_configs.find_one({"subdomain": subdomain, "is_published": True})
+    config = await db.store_configs.find_one({"subdomain": subdomain, "is_published": True, "is_approved": True})
     if not config:
         return {"error": "Store not found or not published"}
 
@@ -69,16 +69,8 @@ async def get_store_by_subdomain(subdomain: str):
 async def get_public_store(store_id: str):
     db = await get_database()
 
-    # Try ObjectId first
-    config = None
-    try:
-        config = await db.store_configs.find_one({"_id": ObjectId(store_id), "is_published": True})
-    except Exception:
-        pass
-
-    # Fallback: try as subdomain
-    if not config:
-        config = await db.store_configs.find_one({"subdomain": store_id, "is_published": True})
+    # Try subdomain resolve
+    config = await db.store_configs.find_one({"subdomain": store_id, "is_published": True, "is_approved": True})
 
     if not config:
         return {"error": "Store not found or not published"}
@@ -143,7 +135,7 @@ async def list_all_public_products():
 
     # Get all published merchant IDs
     published_configs = await db.store_configs.find(
-        {"is_published": True}, {"merchant_id": 1}
+        {"is_published": True, "is_approved": True}, {"merchant_id": 1}
     ).to_list(None)
     published_merchant_ids = [c["merchant_id"] for c in published_configs]
 

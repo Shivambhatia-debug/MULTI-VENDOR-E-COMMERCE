@@ -16,8 +16,8 @@ async def get_admin_stats(current_user: dict = Depends(get_current_user)):
     # 1. Total Merchants
     merchants_count = await db.users.count_documents({"role": "merchant"})
     
-    # 2. Active Stores
-    stores_count = await db.stores.count_documents({})
+    # 2. Active Stores (Using store_configs)
+    stores_count = await db.store_configs.count_documents({})
     
     # 3. Platform Revenue (Sum of all orders total)
     pipeline = [
@@ -72,7 +72,7 @@ async def get_all_merchants(current_user: dict = Depends(get_current_user)):
     enriched_merchants = []
     for m in merchants_list:
         m_id = str(m["_id"])
-        stores_count = await db.stores.count_documents({"merchant_id": m_id})
+        stores_count = await db.store_configs.count_documents({"merchant_id": m_id})
         
         # Revenue for this merchant
         rev_pipeline = [
@@ -158,21 +158,112 @@ async def get_all_stores(current_user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Not authorized")
     
     db = await get_database()
-    stores_list = await db.stores.find({}).to_list(None)
+    stores_list = await db.store_configs.find({}).to_list(None)
     
     enriched_stores = []
     for s in stores_list:
         m_id = s.get("merchant_id")
-        merchant = await db.users.find_one({"_id": m_id}) if m_id else None
+        merchant = None
+        if m_id:
+            try:
+                from bson import ObjectId
+                merchant = await db.users.find_one({"_id": ObjectId(m_id)})
+            except:
+                merchant = await db.users.find_one({"_id": m_id})
         
         enriched_stores.append({
             "id": str(s["_id"]),
-            "name": s.get("name", "Unnamed Store"),
+            "name": s.get("store_name", "Unnamed Store"),
             "subdomain": s.get("subdomain", "n/a"),
             "merchant_name": merchant.get("name") if merchant else "Unknown",
             "merchant_email": merchant.get("email") if merchant else "N/A",
-            "status": s.get("status", "Active"),
+            "status": "Active" if s.get("is_published") else "Draft",
+            "is_approved": s.get("is_approved", False),
             "created_at": s.get("created_at", "N/A")
         })
         
     return enriched_stores
+
+@router.get("/verification/pending")
+async def get_pending_verifications(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    # A store is pending if it's published by merchant but not yet approved by admin
+    pending_stores = await db.store_configs.find({
+        "is_published": True, 
+        "is_approved": {"$ne": True}
+    }).to_list(None)
+    
+    enriched = []
+    for s in pending_stores:
+        m_id = s.get("merchant_id")
+        merchant = await db.users.find_one({"_id": ObjectId(m_id)}) if m_id else None
+        
+        enriched.append({
+            "id": str(s["_id"]),
+            "store_name": s.get("store_name"),
+            "subdomain": s.get("subdomain"),
+            "merchant_name": merchant.get("name") if merchant else "Unknown",
+            "merchant_email": merchant.get("email") if merchant else "N/A",
+            "requested_at": s.get("updated_at", s.get("created_at", "N/A"))
+        })
+    return enriched
+
+@router.post("/verification/approve/{store_id}")
+async def approve_store(store_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    result = await db.store_configs.update_one(
+        {"_id": ObjectId(store_id)},
+        {"$set": {"is_approved": True, "verification_status": "Verified", "verified_at": datetime.utcnow()}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Store not found")
+    return {"message": "Store approved successfully"}
+
+@router.post("/verification/reject/{store_id}")
+async def reject_store(store_id: str, reason: str = "Does not meet platform guidelines", current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    result = await db.store_configs.update_one(
+        {"_id": ObjectId(store_id)},
+        {"$set": {"is_approved": False, "is_published": False, "verification_status": "Rejected", "rejection_reason": reason}}
+    )
+    return {"message": "Store rejected"}
+
+@router.get("/marketplace/settings")
+async def get_marketplace_settings(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    settings = await db.platform_settings.find_one({"type": "marketplace"})
+    if not settings:
+        # Default settings
+        return {
+            "banners": [],
+            "featured_merchants": [],
+            "announcement_ticker": "Welcome to Golalita Marketplace - The Future of Qatari Commerce"
+        }
+    settings["id"] = str(settings["_id"])
+    settings.pop("_id", None)
+    return settings
+
+@router.post("/marketplace/settings")
+async def update_marketplace_settings(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    await db.platform_settings.update_one(
+        {"type": "marketplace"},
+        {"$set": data},
+        upsert=True
+    )
+    return {"message": "Marketplace settings updated"}

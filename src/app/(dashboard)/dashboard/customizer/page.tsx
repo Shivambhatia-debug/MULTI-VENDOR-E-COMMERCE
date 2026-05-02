@@ -76,6 +76,8 @@ export default function CustomizerEditorialPage() {
     const [merchantProducts, setMerchantProducts] = useState<any[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isApproved, setIsApproved] = useState(false);
+    const [isPublished, setIsPublished] = useState(false);
 
     // Color State - Defaulting to Professional Blue/White
     const [primaryColor, setPrimaryColor] = useState("#2563eb");
@@ -137,6 +139,8 @@ export default function CustomizerEditorialPage() {
                     if (config.show_ticker !== undefined) setShowTicker(config.show_ticker);
                     if (config.discovery_title) setDiscoveryTitle(config.discovery_title);
                     if (config.discovery_subtitle) setDiscoverySubtitle(config.discovery_subtitle);
+                    if (config.is_approved !== undefined) setIsApproved(config.is_approved);
+                    if (config.is_published !== undefined) setIsPublished(config.is_published);
                     if (config.hero_library && config.hero_library.length > 0) setHeroLibrary(config.hero_library);
                 }
 
@@ -211,7 +215,8 @@ export default function CustomizerEditorialPage() {
                 throw new Error(errorData.detail || "Failed to publish");
             }
 
-            alert("Store successfully deployed live!");
+            setIsPublished(true);
+            alert("Deployment request sent to Admin protocol. Store will be live once verified.");
         } catch (error: any) {
             console.error("DEPLOY_ERROR:", error);
             alert(`Error deploying store: ${error.message}`);
@@ -298,9 +303,13 @@ export default function CustomizerEditorialPage() {
                         </div>
                     </div>
                     <div className="flex gap-2 w-full md:w-auto">
-                        <button onClick={handleDeploy} disabled={isSaving || isLoading} className="flex-1 md:flex-initial px-8 py-3 bg-blue-600 text-white rounded-full text-[11px] font-bold uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50">
-                            {isSaving ? <RotateCcw size={16} className="animate-spin" /> : <Globe size={16} />}
-                            {isSaving ? "DEPLOYING..." : "DEPLOY LIVE"}
+                        <button 
+                            onClick={handleDeploy} 
+                            disabled={isSaving || isLoading || (isPublished && !isApproved)} 
+                            className={`flex-1 md:flex-initial px-8 py-3 rounded-full text-[11px] font-bold uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 ${isPublished && !isApproved ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                        >
+                            {isSaving ? <RotateCcw size={16} className="animate-spin" /> : (isPublished && !isApproved ? <Clock size={16} /> : <Globe size={16} />)}
+                            {isSaving ? "SYNCING..." : (isPublished && !isApproved ? "AWAITING APPROVAL" : "DEPLOY LIVE")}
                         </button>
                     </div>
                 </div>
@@ -309,12 +318,17 @@ export default function CustomizerEditorialPage() {
                     {/* LEFT CONTROLS (4 Cols) */}
                     <div className="xl:col-span-4 space-y-6 sticky top-8 pb-12">
                         {/* Domain Interface */}
-                        <div className="bg-white border-2 border-emerald-500/20 p-6 rounded-2xl shadow-sm relative overflow-hidden group">
+                        <div className={`bg-white border-2 p-6 rounded-2xl shadow-sm relative overflow-hidden group ${isPublished && !isApproved ? 'border-amber-500/20' : 'border-emerald-500/20'}`}>
                             <div className="flex justify-between items-center mb-4 relative z-10">
-                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ACTIVE SITE</h3>
-                                <Globe size={14} className="text-emerald-500" />
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PROTOCOL STATUS</h3>
+                                {isPublished && !isApproved ? <Clock size={14} className="text-amber-500" /> : <Globe size={14} className="text-emerald-500" />}
                             </div>
-                            <span className="text-[14px] font-bold text-slate-900 tracking-tight">lux-apparel.golalita.qa</span>
+                            <div className="flex flex-col">
+                                <span className="text-[14px] font-bold text-slate-900 tracking-tight">lux-apparel.golalita.qa</span>
+                                <span className={`text-[8px] font-black uppercase mt-1 tracking-widest ${isPublished && !isApproved ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                    {isPublished && !isApproved ? '• Pending Compliance Review' : '• Global Node Active'}
+                                </span>
+                            </div>
                         </div>
 
                         {/* BRAND IDENTITY */}
