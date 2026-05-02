@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
 from .database import connect_to_mongo, close_mongo_connection
-from .routes import auth, products, orders, dashboard, merchants, public_stores
+from .routes import auth, products, orders, dashboard, merchants, public_stores, admin
 from .routes.store_config import router as store_config_router
 
 app = FastAPI(title="Golalita E-Commerce API")
@@ -40,6 +40,7 @@ app.include_router(orders.router)
 app.include_router(dashboard.router)
 app.include_router(merchants.router)
 app.include_router(public_stores.router)
+app.include_router(admin.router)
 
 @app.on_event("startup")
 async def startup_event():
