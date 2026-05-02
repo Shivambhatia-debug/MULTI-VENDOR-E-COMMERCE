@@ -8,5 +8,11 @@
       "entrypoint": "backend",
       "routePrefix": "/_backend"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/python/:path*",
+      "destination": "/_backend/api/:path*"
+    }
+  ]
 }
