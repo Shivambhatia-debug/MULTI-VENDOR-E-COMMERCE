@@ -136,7 +136,7 @@ export default function MerchantLandingPage() {
                                         <p className="text-[10px] font-bold uppercase tracking-widest text-[#0f172a]">Your cart is empty</p>
                                     </div>
                                 ) : (
-                                    cartItems.map((item, idx) => (
+                                    cartItems.map((item: any, idx: number) => (
                                         <div key={idx} className="flex gap-4 items-center">
                                             <div className="w-16 h-16 bg-slate-100 rounded-lg shrink-0 overflow-hidden">
                                                 <img src={item.image || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=100"} className="w-full h-full object-cover" alt={item.name} />
@@ -510,7 +510,7 @@ export default function MerchantLandingPage() {
                                             <button className="text-[10px] font-black text-blue-600 uppercase tracking-widest border-b border-blue-600 pb-0.5">See All</button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            {merchantProducts.filter(p => p.id !== selectedProduct.id).slice(0, 4).map((p, i) => (
+                                            {merchantProducts.filter((p: any) => p.id !== selectedProduct.id).slice(0, 4).map((p: any, i: number) => (
                                                 <div 
                                                     key={p.id || i} 
                                                     className="group cursor-pointer space-y-3"

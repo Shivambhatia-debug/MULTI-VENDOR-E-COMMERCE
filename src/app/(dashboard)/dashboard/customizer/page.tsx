@@ -519,7 +519,7 @@ export default function CustomizerEditorialPage() {
                                                                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#0f172a]">Your cart is empty</p>
                                                             </div>
                                                         ) : (
-                                                            cartItems.map((item, idx) => (
+                                                            cartItems.map((item: any, idx: number) => (
                                                                 <div key={idx} className="flex gap-4 items-center">
                                                                     <div className="w-12 h-12 bg-slate-100 rounded-lg shrink-0 overflow-hidden">
                                                                         <img src={item.image || "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=100"} className="w-full h-full object-cover" alt="" />
