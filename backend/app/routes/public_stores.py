@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ..database import get_database
+from app.database import get_database
 from bson import ObjectId
 
 router = APIRouter(prefix="/api/public", tags=["public-stores"])

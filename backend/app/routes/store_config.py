@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from ..database import get_database
-from ..models.store_config import StoreConfigBase, StoreConfigUpdate, DomainUpdate
-from .auth import get_current_user
+from app.database import get_database
+from app.models.store_config import StoreConfigBase, StoreConfigUpdate, DomainUpdate
+from app.routes.auth import get_current_user
 from bson import ObjectId
 from datetime import datetime
 import re

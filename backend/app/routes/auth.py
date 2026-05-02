@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from ..config import settings
-from ..database import get_database
-from ..models.user import UserCreate, UserOut, UserInDB
-from ..utils.auth import get_password_hash, verify_password, create_access_token
+from app.config import settings
+from app.database import get_database
+from app.models.user import UserCreate, UserOut, UserInDB
+from app.utils.auth import get_password_hash, verify_password, create_access_token
 from datetime import datetime
 from bson import ObjectId
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from ..database import get_database
-from ..models.product import ProductCreate, ProductOut, ProductUpdate
-from .auth import get_current_user
+from app.database import get_database
+from app.models.product import ProductCreate, ProductOut, ProductUpdate
+from app.routes.auth import get_current_user
 from bson import ObjectId
 from typing import List, Optional
 

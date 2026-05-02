@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from ..database import get_database
-from .auth import get_current_user
+from app.database import get_database
+from app.routes.auth import get_current_user
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"], redirect_slashes=False)
 

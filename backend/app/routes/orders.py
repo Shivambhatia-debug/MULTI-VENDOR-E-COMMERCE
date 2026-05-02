@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from ..database import get_database
-from ..models.order import OrderCreate, OrderOut
-from .auth import get_current_user
+from app.database import get_database
+from app.models.order import OrderCreate, OrderOut
+from app.routes.auth import get_current_user
 from bson import ObjectId
 from typing import List
 

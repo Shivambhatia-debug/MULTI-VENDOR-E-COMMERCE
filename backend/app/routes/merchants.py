@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
-from ..database import get_database
-from ..models.merchant import MerchantOut
-from .auth import get_current_user
+from app.database import get_database
+from app.models.merchant import MerchantOut
+from app.routes.auth import get_current_user
 from typing import List
 
 router = APIRouter(prefix="/api/merchants", tags=["merchants"])

@@ -2,9 +2,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
-from .database import connect_to_mongo, close_mongo_connection
-from .routes import auth, products, orders, dashboard, merchants, public_stores, admin
-from .routes.store_config import router as store_config_router
+from app.database import connect_to_mongo, close_mongo_connection
+from app.routes import auth, products, orders, dashboard, merchants, public_stores, admin
+from app.routes.store_config import router as store_config_router
 
 app = FastAPI(title="Golalita E-Commerce API")
 
