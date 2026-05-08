@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
     Sparkles, Image as ImageIcon, Save, Plus, Trash2, 
     Layout, Type, Target, Loader2, CheckCircle2, AlertCircle,
     Zap, Smartphone, ShieldCheck, ShoppingBag, Heart, Star, 
-    Tag, Gift, Coffee, Headphones, Watch, Camera, Globe
+    Tag, Gift, Coffee, Headphones, Watch, Camera, Globe, Upload
 } from "lucide-react";
 
 export default function AdminMarketplacePage() {
@@ -102,6 +102,23 @@ export default function AdminMarketplacePage() {
     const removePromotion = (index: number) => {
         const newPromos = settings.promotions.filter((_: any, i: number) => i !== index);
         setSettings({ ...settings, promotions: newPromos });
+    };
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && uploadingIndex !== null) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                const b = [...settings.banners];
+                b[uploadingIndex].image_url = base64String;
+                setSettings({ ...settings, banners: b });
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const iconOptions = [
@@ -341,11 +358,25 @@ export default function AdminMarketplacePage() {
                                                     placeholder="HTTPS://IMAGE-CDN..."
                                                 />
                                             </div>
-                                            <div className="h-24 bg-white rounded-[1.5rem] border border-dashed border-slate-200 overflow-hidden shadow-inner flex items-center justify-center">
+                                            <div 
+                                                className="h-24 bg-white rounded-[1.5rem] border border-dashed border-slate-200 overflow-hidden shadow-inner flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-all relative group"
+                                                onClick={() => {
+                                                    setUploadingIndex(index);
+                                                    fileInputRef.current?.click();
+                                                }}
+                                            >
                                                 {banner.image_url ? (
-                                                    <img src={banner.image_url} className="w-full h-full object-cover" alt="" />
+                                                    <>
+                                                        <img src={banner.image_url} className="w-full h-full object-cover" alt="" />
+                                                        <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                                                            <Upload className="text-white" size={24} />
+                                                        </div>
+                                                    </>
                                                 ) : (
-                                                    <div className="text-slate-200"><ImageIcon size={32} /></div>
+                                                    <div className="flex flex-col items-center gap-1 text-slate-300">
+                                                        <Upload size={24} />
+                                                        <span className="text-[8px] font-black uppercase">Click to Upload</span>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -437,6 +468,14 @@ export default function AdminMarketplacePage() {
                     </div>
                 </div>
             </div>
+
+            <input 
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
+            />
         </div>
     );
 }

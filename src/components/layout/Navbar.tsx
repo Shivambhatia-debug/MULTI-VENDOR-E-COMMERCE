@@ -229,94 +229,95 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
             {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isMenuOpen && (
-                    <>
+                    <div className="md:hidden fixed inset-0 z-[100] font-sans">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsMenuOpen(false)}
-                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[9998] md:hidden"
+                            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
                         />
                         <motion.div 
                             initial={{ x: language === 'ar' ? '-100%' : '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: language === 'ar' ? '-100%' : '100%' }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className={`md:hidden fixed top-0 ${language === 'ar' ? 'left-0' : 'right-0'} w-[280px] h-full bg-white z-[9999] shadow-2xl flex flex-col`}
+                            className={`absolute top-0 ${language === 'ar' ? 'left-0' : 'right-0'} w-[85%] max-w-[320px] h-[100dvh] bg-white shadow-2xl flex flex-col`}
                         >
-                            <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded flex items-center justify-center relative">
+                            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 relative">
                                         <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
                                     </div>
-                                    <span className="text-sm font-black uppercase tracking-tighter italic">Menu</span>
+                                    <span className="text-sm font-black uppercase tracking-widest text-slate-900">Menu</span>
                                 </div>
-                                <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-950 transition-colors">
-                                    <X size={20} />
+                                <button onClick={() => setIsMenuOpen(false)} className="p-2 rounded-full bg-white text-slate-400 hover:text-slate-900 shadow-sm border border-slate-100">
+                                    <X size={18} />
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                                <div className="space-y-1 py-2">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">{t("menu")}</p>
+                            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                                <div className="space-y-2">
                                     {navLinks.map((link) => (
                                         <Link 
                                             key={link.name}
                                             href={link.href} 
-                                            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:text-blue-600 transition-all group" 
+                                            className="flex items-center gap-4 px-4 py-4 rounded-2xl text-[11px] font-black text-slate-700 uppercase tracking-widest hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100 group" 
                                             onClick={() => setIsMenuOpen(false)}
                                         >
-                                            <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
-                                                <link.icon size={16} />
+                                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors text-slate-400 group-hover:text-blue-600">
+                                                <link.icon size={18} />
                                             </div>
-                                            <span className="flex-1">{link.name}</span>
-                                            <ArrowRight size={14} className={`opacity-0 group-hover:opacity-100 transition-all ${language === 'ar' ? 'rotate-180' : ''}`} />
+                                            <span className="flex-1">{link.name || link.href.replace("/", "")}</span>
+                                            <ArrowRight size={16} className={`text-slate-300 group-hover:text-blue-600 transition-all ${language === 'ar' ? 'rotate-180' : ''}`} />
                                         </Link>
                                     ))}
                                 </div>
 
                                 {isAuthenticated && (
-                                    <div className="mt-6 pt-6 border-t border-slate-50 space-y-4">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t("account")}</p>
-                                        <div className="grid grid-cols-1 gap-2">
-                                            {getRoleLinks().map((link) => (
-                                                <Link 
-                                                    key={link.name}
-                                                    href={link.href}
-                                                    onClick={() => setIsMenuOpen(false)}
-                                                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:text-blue-600 transition-all group"
-                                                >
-                                                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
-                                                        <link.icon size={16} />
-                                                    </div>
-                                                    <span className="flex-1">{link.name}</span>
-                                                </Link>
-                                            ))}
-                                        </div>
+                                    <div className="pt-6 border-t border-slate-100 space-y-2">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">{t("account") || "Account"}</p>
+                                        {getRoleLinks().map((link) => (
+                                            <Link 
+                                                key={link.name}
+                                                href={link.href}
+                                                onClick={() => setIsMenuOpen(false)}
+                                                className="flex items-center gap-4 px-4 py-4 rounded-2xl text-[11px] font-black text-slate-700 uppercase tracking-widest hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100 group"
+                                            >
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors text-slate-400 group-hover:text-blue-600">
+                                                    <link.icon size={18} />
+                                                </div>
+                                                <span className="flex-1">{link.name}</span>
+                                            </Link>
+                                        ))}
                                     </div>
                                 )}
                             </div>
 
-                            <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-3">
+                            <div className="p-5 bg-white border-t border-slate-100 space-y-3">
                                 {isAuthenticated ? (
                                     <button 
                                         onClick={() => {
                                             logout();
                                             setIsMenuOpen(false);
                                         }}
-                                        className="w-full bg-white border border-red-100 text-red-500 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm hover:bg-red-50 transition-all"
+                                        className="w-full bg-red-50 text-red-600 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-red-100 transition-all"
                                     >
-                                        <LogOut size={14} /> {t("sign_out")}
+                                        <LogOut size={16} /> {t("sign_out") || "Sign Out"}
                                     </button>
                                 ) : (
-                                    <>
-                                        <Link href="/login" className="block w-full bg-white border border-slate-200 text-slate-950 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center shadow-sm" onClick={() => setIsMenuOpen(false)}>{t("login")}</Link>
-                                        <Link href="/get-started" className="block w-full bg-slate-950 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center shadow-lg active:scale-95 transition-all" onClick={() => setIsMenuOpen(false)}>{t("get_started")}</Link>
-                                    </>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Link href="/login" className="w-full bg-slate-50 text-slate-900 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center border border-slate-200 hover:bg-slate-100 transition-colors flex items-center justify-center" onClick={() => setIsMenuOpen(false)}>
+                                            {t("login") || "Log In"}
+                                        </Link>
+                                        <Link href="/get-started" className="w-full bg-slate-950 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center shadow-lg hover:bg-slate-800 transition-colors flex items-center justify-center" onClick={() => setIsMenuOpen(false)}>
+                                            {t("get_started") || "Get Started"}
+                                        </Link>
+                                    </div>
                                 )}
                             </div>
                         </motion.div>
-                    </>
+                    </div>
                 )}
             </AnimatePresence>
         </nav>

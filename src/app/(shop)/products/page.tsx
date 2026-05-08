@@ -129,8 +129,8 @@ export default function ProductsPage() {
         <main className="min-h-screen bg-[#f1f3f6]">
             <Navbar invert={true} />
 
-            {/* Announcement Ticker */}
-            {settings?.announcement_ticker && (
+
+            {false && settings?.announcement_ticker && (
                 <div className="pt-16 sm:pt-20 bg-slate-950 text-white py-1 sm:py-2 overflow-hidden">
                     <div className="whitespace-nowrap animate-marquee flex items-center gap-10">
                         {Array(5).fill(0).map((_, i) => (
@@ -144,21 +144,30 @@ export default function ProductsPage() {
             )}
 
             {/* Sub-Navbar / Quick Category Bar */}
-            <div className={`${!settings?.announcement_ticker ? 'pt-16' : ''} bg-white border-b border-slate-100 shadow-sm sticky top-0 z-40`}>
-                <div className="section-padding py-2 overflow-x-auto no-scrollbar">
-                    <div className="flex items-center justify-between gap-6 min-w-max mx-auto max-w-6xl">
+            <div className="pt-20 bg-white/80 backdrop-blur-xl border-b border-slate-100/50 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar py-4">
                         {categories.map((cat: any) => {
                             const Icon = (Icons as any)[cat.icon] || Icons.Package;
+                            const isActive = selectedCategory === cat.name;
                             return (
                                 <button
                                     key={cat.name}
                                     onClick={() => setSelectedCategory(cat.name)}
-                                    className={`flex flex-col items-center gap-1 sm:gap-1.5 group transition-all ${selectedCategory === cat.name ? "opacity-100" : "opacity-60 hover:opacity-100"}`}
+                                    className={`
+                                        flex items-center gap-2 px-5 py-2.5 rounded-full transition-all duration-300 whitespace-nowrap
+                                        ${isActive 
+                                            ? "bg-slate-950 text-white shadow-[0_10px_20px_rgba(0,0,0,0.1)] scale-105" 
+                                            : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-900"}
+                                    `}
                                 >
-                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all ${selectedCategory === cat.name ? "bg-blue-600 text-white shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"}`}>
-                                        <Icon size={14} className="sm:w-[18px] sm:h-[18px]" strokeWidth={selectedCategory === cat.name ? 2.5 : 2} />
+                                    <div className={`
+                                        w-6 h-6 rounded-lg flex items-center justify-center transition-colors
+                                        ${isActive ? "text-blue-400" : "text-slate-400"}
+                                    `}>
+                                        <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                                     </div>
-                                    <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${selectedCategory === cat.name ? "text-blue-600" : "text-slate-500"}`}>{cat.name}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{cat.name}</span>
                                 </button>
                             );
                         })}
