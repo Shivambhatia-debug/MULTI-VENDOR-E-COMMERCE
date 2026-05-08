@@ -11,7 +11,10 @@ async def get_database():
 
 async def connect_to_mongo():
     db.client = AsyncIOMotorClient(settings.MONGODB_URL)
-    print("Connected to MongoDB")
+    # Create TTL index for OTPs (10 minutes)
+    database = db.client[settings.DATABASE_NAME]
+    await database.otps.create_index("expire_at", expireAfterSeconds=0)
+    print("Connected to MongoDB & Created TTL Indexes")
 
 async def close_mongo_connection():
     db.client.close()

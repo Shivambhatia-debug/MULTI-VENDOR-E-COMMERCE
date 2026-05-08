@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
+from pydantic import EmailStr
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -6,7 +7,10 @@ from app.config import settings
 from app.database import get_database
 from app.models.user import UserCreate, UserOut, UserInDB
 from app.utils.auth import get_password_hash, verify_password, create_access_token
-from datetime import datetime
+from app.utils.email import send_otp_email
+from datetime import datetime, timedelta
+import random
+import string
 from bson import ObjectId
 
 router = APIRouter(prefix="/api/auth", tags=["auth"], redirect_slashes=False)
@@ -33,10 +37,84 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
+def generate_otp(length=6):
+    return ''.join(random.choices(string.digits, k=length))
+
+@router.post("/send-otp")
+async def send_otp(email: EmailStr = Query(...)):
+    otp = generate_otp()
+    db = await get_database()
+    
+    # Store OTP in DB with expiration (10 mins)
+    expire_at = datetime.utcnow() + timedelta(minutes=10)
+    await db.otps.update_one(
+        {"email": email},
+        {"$set": {"otp": otp, "expire_at": expire_at}},
+        upsert=True
+    )
+    
+    # Send Email
+    success = send_otp_email(email, otp)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send OTP email")
+        
+    return {"message": "OTP sent successfully"}
+
+@router.post("/verify-otp")
+async def verify_otp(email: EmailStr = Query(...), otp: str = Query(...)):
+    db = await get_database()
+    otp_record = await db.otps.find_one({"email": email})
+    
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="No OTP record found for this email")
+        
+    if otp_record["otp"] != otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+    if datetime.utcnow() > otp_record["expire_at"]:
+        raise HTTPException(status_code=400, detail="OTP expired")
+        
+    # Mark as verified or just return success
+    # Optionally, we could delete the OTP record here, or keep it for the next step (reset password/register)
+    return {"message": "OTP verified successfully"}
+
+@router.post("/forgot-password")
+async def forgot_password(email: EmailStr = Query(...)):
+    db = await get_database()
+    user = await db.users.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return await send_otp(email)
+
+@router.post("/reset-password")
+async def reset_password(email: EmailStr = Query(...), otp: str = Query(...), new_password: str = Query(...)):
+    # First verify OTP
+    await verify_otp(email, otp)
+    
+    db = await get_database()
+    hashed_password = get_password_hash(new_password)
+    
+    result = await db.users.update_one(
+        {"email": email},
+        {"$set": {"password_hash": hashed_password}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=500, detail="Failed to update password")
+        
+    # Delete OTP after successful reset
+    await db.otps.delete_one({"email": email})
+    
+    return {"message": "Password reset successfully"}
+
 @router.post("/register", response_model=UserOut)
 @router.post("/register/", response_model=UserOut)
-async def register(user_in: UserCreate, business_name: Optional[str] = None):
+async def register(user_in: UserCreate, otp: str, business_name: Optional[str] = None):
     try:
+        # Verify OTP first
+        await verify_otp(user_in.email, otp)
+        
         db = await get_database()
         if await db.users.find_one({"email": user_in.email}):
             raise HTTPException(status_code=400, detail="Email already registered")
