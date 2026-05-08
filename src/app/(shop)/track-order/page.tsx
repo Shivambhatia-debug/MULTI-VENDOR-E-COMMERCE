@@ -2,7 +2,7 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { Search, Truck, MapPin, Package, Clock, ShieldCheck } from "lucide-react";
+import { Search, Truck, MapPin, Package, Clock, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
