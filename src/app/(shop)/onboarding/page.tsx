@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, ArrowRight, ArrowLeft, Building2, User, CreditCard, Rocket } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const steps = ["Account", "Choose Plan", "Store Details"];
 
@@ -14,8 +15,8 @@ export default function OnboardingPage() {
         <div className="min-h-screen bg-slate-50 flex flex-col">
             <nav className="h-16 flex items-center px-8 bg-white border-b border-slate-200">
                 <Link href="/" className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold">G</span>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center relative">
+                        <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
                     </div>
                     <span className="font-bold text-slate-900 tracking-tight">Golalita</span>
                 </Link>

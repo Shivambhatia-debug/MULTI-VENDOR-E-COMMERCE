@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Globe, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -13,8 +14,8 @@ const Footer = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
                     <div className="col-span-1 md:col-span-1">
                         <Link href="/" className="flex items-center gap-2 mb-6">
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">G</span>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center relative">
+                                <Image src="/web background/web background/logo 3 png.png" alt="Golalita" fill className="object-contain" />
                             </div>
                             <span className="text-xl font-bold text-white">Golalita</span>
                         </Link>

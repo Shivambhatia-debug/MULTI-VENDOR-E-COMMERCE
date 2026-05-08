@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard, Users, Store, Settings,
@@ -44,8 +45,8 @@ export default function AdminSidebar() {
             <aside className={`fixed lg:sticky top-0 left-0 z-[55] w-72 bg-white border-r border-slate-100 h-screen transition-transform duration-500 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 flex flex-col`}>
                 <div className="p-8">
                     <Link href="/admin" className="flex items-center gap-3 group">
-                        <div className="w-10 h-10 bg-slate-950 rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                            <span className="text-white font-black text-xl italic">G</span>
+                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center relative group-hover:scale-110 transition-transform">
+                            <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
                         </div>
                         <div>
                             <span className="text-lg font-black text-slate-950 tracking-tighter block leading-none">Admin</span>

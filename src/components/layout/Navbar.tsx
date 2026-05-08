@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ShoppingCart, Menu, X, ArrowRight, User, LogOut, LayoutDashboard, Heart, Package, Search, Settings, Globe, Award } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useMerchant } from "@/context/MerchantContext";
@@ -81,12 +82,11 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
             <div className="max-w-7xl mx-auto flex justify-between items-center w-full">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 group">
-                    <div className="w-9 h-9 bg-slate-950 rounded-lg flex items-center justify-center shadow-lg shadow-slate-900/10 group-hover:scale-105 transition-all duration-300 border border-white/10">
-                        <span className="text-white font-black text-lg leading-none">G</span>
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-105 transition-all duration-300 relative">
+                        <Image src={isLight ? "/web background/web background/logo 2 png.png" : "/web background/web background/logo 3 png.png"} alt="Golalita" fill className="object-contain" />
                     </div>
                     <span className={`text-lg sm:text-xl font-black tracking-tighter flex items-center gap-1 uppercase transition-colors ${isLight ? "text-slate-950" : "text-white"}`}>
                         Golalita
-                        <span className="text-[9px] bg-white text-slate-950 px-1.5 py-0.5 rounded font-black border border-slate-200">OS</span>
                     </span>
                 </Link>
 
@@ -246,8 +246,8 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
                         >
                             <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-slate-950 rounded flex items-center justify-center">
-                                        <span className="text-white font-black text-sm">G</span>
+                                    <div className="w-8 h-8 rounded flex items-center justify-center relative">
+                                        <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
                                     </div>
                                     <span className="text-sm font-black uppercase tracking-tighter italic">Menu</span>
                                 </div>

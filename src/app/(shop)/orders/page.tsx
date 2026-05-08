@@ -147,7 +147,6 @@ export default function OrdersPage() {
                 </div>
             </div>
 
-            <Footer />
         </main>
     );
 }

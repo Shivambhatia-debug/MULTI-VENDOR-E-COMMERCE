@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -16,8 +17,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 {/* Logo */}
                 <div className="flex flex-col items-center mb-10">
                     <Link href="/" className="flex items-center gap-2 group transition-transform hover:scale-105">
-                        <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center shadow-2xl shadow-slate-900/20 border border-white/10">
-                            <span className="text-white font-black text-xl">G</span>
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center relative shadow-2xl shadow-slate-900/20 border border-slate-200">
+                            <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
                         </div>
                         <span className="text-2xl font-black tracking-tighter uppercase text-slate-950">
                             Golalita

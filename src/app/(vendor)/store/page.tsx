@@ -91,7 +91,6 @@ export default function StoreSetupPage() {
                 </div>
             </section>
 
-            <Footer />
         </main>
     );
 }

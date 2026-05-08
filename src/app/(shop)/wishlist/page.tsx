@@ -67,7 +67,6 @@ export default function WishlistPage() {
                 )}
             </div>
 
-            <Footer />
         </main>
     );
 }

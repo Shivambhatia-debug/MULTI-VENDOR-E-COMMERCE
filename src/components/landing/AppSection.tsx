@@ -1,6 +1,7 @@
 "use client";
 
 import { Smartphone, Bell, Heart, Star, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function AppSection() {
@@ -57,8 +58,8 @@ export default function AppSection() {
                             <div className="bg-white rounded-[2.5rem] aspect-[9/19.5] overflow-hidden relative shadow-inner">
                                 <div className="p-6">
                                     <div className="flex justify-between items-center mb-8">
-                                        <div className="w-8 h-8 bg-slate-950 rounded-lg flex items-center justify-center">
-                                            <span className="text-white text-[10px] font-black">G</span>
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center relative">
+                                            <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
                                         </div>
                                         <div className="w-8 h-2 bg-slate-100 rounded-full"></div>
                                     </div>

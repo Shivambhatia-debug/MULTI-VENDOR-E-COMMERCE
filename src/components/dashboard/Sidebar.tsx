@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
@@ -86,8 +87,8 @@ const Sidebar = () => {
             <aside className={`fixed inset-y-0 ${isRtl ? 'right-0 border-l' : 'left-0 border-r'} border-slate-200 z-40 w-64 bg-white transition-transform duration-300 transform ${isOpen ? "translate-x-0" : (isRtl ? "translate-x-full" : "-translate-x-full")} md:translate-x-0 flex flex-col`}>
                 <div className="p-6">
                     <Link href="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-slate-950 rounded-lg flex items-center justify-center shadow-sm">
-                            <span className="text-white font-bold text-lg">G</span>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center relative">
+                            <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
                         </div>
                         <span className="text-xl font-bold text-slate-900 leading-none tracking-tight text-gradient">Golalita</span>
                     </Link>

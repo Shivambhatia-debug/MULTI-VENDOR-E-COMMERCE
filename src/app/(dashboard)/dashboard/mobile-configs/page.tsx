@@ -2,6 +2,7 @@
 
 import Sidebar from "@/components/dashboard/Sidebar";
 import { Smartphone, Layout, Bell, Palette, Upload, CheckCircle2, Lock } from "lucide-react";
+import Image from "next/image";
 import { useMerchant } from "@/context/MerchantContext";
 
 export default function MobileConfigsPage() {
@@ -105,8 +106,8 @@ export default function MobileConfigsPage() {
                                 <div className="bg-white rounded-[2.8rem] aspect-[9/19] overflow-hidden relative shadow-inner">
                                     <div className="p-8">
                                         <div className="flex justify-between items-center mb-12">
-                                            <div className="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
-                                                <span className="text-white text-lg font-black">G</span>
+                                            <div className="w-10 h-10 rounded-2xl flex items-center justify-center relative shadow-lg shadow-blue-200">
+                                                <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain p-1" />
                                             </div>
                                             <div className="w-10 h-4 bg-slate-50 border border-slate-100 rounded-full" />
                                         </div>

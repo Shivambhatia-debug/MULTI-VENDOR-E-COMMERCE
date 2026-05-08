@@ -169,7 +169,6 @@ export default function PaymentSuccessPage() {
                 </motion.div>
             </div>
 
-            <Footer />
         </main>
     );
 }

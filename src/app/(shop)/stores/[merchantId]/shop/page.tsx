@@ -126,7 +126,6 @@ export default function MerchantShopPage() {
                 )}
             </div>
 
-            <Footer />
         </main>
     );
 }

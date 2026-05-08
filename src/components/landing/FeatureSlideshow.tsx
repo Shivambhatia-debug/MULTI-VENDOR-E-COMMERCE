@@ -14,31 +14,31 @@ export default function FeatureSlideshow() {
         {
             title: t("slide_store_builder"),
             desc: t("slide_store_builder_desc"),
-            image: "/noir_store_builder_mockup.png",
+            image: "/web background/web background/store builder.jpg",
             accent: "bg-slate-950"
         },
         {
             title: t("slide_sell_everywhere"),
             desc: t("slide_sell_everywhere_desc"),
-            image: "/marketplace_hero.png",
+            image: "/web background/web background/sell-everywhere.jpg",
             accent: "bg-slate-950"
         },
         {
             title: t("slide_manage_store"),
             desc: t("slide_manage_store_desc"),
-            image: "/merchant_console_hero.png",
+            image: "/web background/web background/manage-store.jpg",
             accent: "bg-slate-950"
         },
         {
             title: t("slide_choose_plan"),
             desc: t("slide_choose_plan_desc"),
-            image: "/logistics_hero.png",
+            image: "/web background/web background/choose-plan.jpg",
             accent: "bg-slate-950"
         },
         {
             title: t("slide_merchant_app"),
             desc: t("slide_merchant_app_desc"),
-            image: "/mobile_app_hero.png",
+            image: "/web background/web background/merchant-app.jpg",
             accent: "bg-slate-950"
         }
     ];
