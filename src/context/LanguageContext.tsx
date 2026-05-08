@@ -36,8 +36,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     const t = (key: keyof typeof dict): string => {
-        if (!dict[key]) return key;
-        return dict[key][language];
+        const entry = dict[key as string];
+        if (!entry) return String(key);
+        return entry[language];
     };
 
     return (

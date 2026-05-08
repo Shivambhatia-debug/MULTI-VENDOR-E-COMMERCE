@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Menu, X, ArrowRight, User, LogOut, LayoutDashboard, Heart, Package, Search, Settings, Globe } from "lucide-react";
+import { ShoppingCart, Menu, X, ArrowRight, User, LogOut, LayoutDashboard, Heart, Package, Search, Settings, Globe, Award } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useMerchant } from "@/context/MerchantContext";
 import { useCart } from "@/context/CartContext";
@@ -34,13 +34,21 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
         };
     }, []);
 
+    useEffect(() => {
+        if (isMenuOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "unset";
+        }
+    }, [isMenuOpen]);
+
     const isLight = isScrolled || invert;
 
     const navLinks = [
-        { name: t("marketplace"), href: "/products" },
-        { name: t("stores"), href: "/stores" },
-        { name: t("packages"), href: "#pricing" },
-        { name: t("support"), href: "/support" },
+        { name: t("marketplace"), href: "/products", icon: Package },
+        { name: t("stores"), href: "/stores", icon: LayoutDashboard },
+        { name: t("packages"), href: "#pricing", icon: Award },
+        { name: t("support"), href: "/support", icon: Globe },
     ];
 
     // Role-based links for dropdown
@@ -221,70 +229,94 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
             {/* Mobile Menu Overlay */}
             <AnimatePresence>
                 {isMenuOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0, x: language === 'ar' ? '-100%' : '100%' }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: language === 'ar' ? '-100%' : '100%' }}
-                        className="md:hidden fixed inset-0 top-0 bg-white z-[100] p-6 space-y-6 flex flex-col"
-                    >
-                        <div className="flex justify-between items-center mb-8">
-                            <span className="text-xl font-black tracking-tighter uppercase italic">{t("menu")}</span>
-                            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-950 bg-slate-100 rounded-full">
-                                <X size={24} />
-                            </button>
-                        </div>
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[9998] md:hidden"
+                        />
+                        <motion.div 
+                            initial={{ x: language === 'ar' ? '-100%' : '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: language === 'ar' ? '-100%' : '100%' }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                            className={`md:hidden fixed top-0 ${language === 'ar' ? 'left-0' : 'right-0'} w-[280px] h-full bg-white z-[9999] shadow-2xl flex flex-col`}
+                        >
+                            <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-slate-950 rounded flex items-center justify-center">
+                                        <span className="text-white font-black text-sm">G</span>
+                                    </div>
+                                    <span className="text-sm font-black uppercase tracking-tighter italic">Menu</span>
+                                </div>
+                                <button onClick={() => setIsMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-950 transition-colors">
+                                    <X size={20} />
+                                </button>
+                            </div>
 
-                        <div className="flex flex-col gap-4">
-                            {navLinks.map((link) => (
-                                <Link 
-                                    key={link.name}
-                                    href={link.href} 
-                                    className="text-2xl font-black text-slate-950 flex items-center justify-between uppercase tracking-tighter border-b border-slate-50 pb-4" 
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    {link.name} <ArrowRight size={18} className={`text-slate-300 ${language === 'ar' ? 'rotate-180' : ''}`} />
-                                </Link>
-                            ))}
-                        </div>
-
-                        {isAuthenticated && (
-                            <div className="bg-slate-50 rounded-3xl p-6 space-y-4">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("account_features")}</p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {getRoleLinks().map((link) => (
+                            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                                <div className="space-y-1 py-2">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">{t("menu")}</p>
+                                    {navLinks.map((link) => (
                                         <Link 
                                             key={link.name}
-                                            href={link.href}
+                                            href={link.href} 
+                                            className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:text-blue-600 transition-all group" 
                                             onClick={() => setIsMenuOpen(false)}
-                                            className="flex flex-col items-center justify-center gap-2 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm active:scale-95 transition-all"
                                         >
-                                            <link.icon size={20} className="text-slate-950" />
-                                            <span className="text-[8px] font-black uppercase text-center tracking-tighter">{link.name}</span>
+                                            <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                                                <link.icon size={16} />
+                                            </div>
+                                            <span className="flex-1">{link.name}</span>
+                                            <ArrowRight size={14} className={`opacity-0 group-hover:opacity-100 transition-all ${language === 'ar' ? 'rotate-180' : ''}`} />
                                         </Link>
                                     ))}
                                 </div>
-                            </div>
-                        )}
 
-                        <div className="mt-auto flex flex-col gap-4 pb-8">
-                            {isAuthenticated ? (
-                                <button 
-                                    onClick={() => {
-                                        logout();
-                                        setIsMenuOpen(false);
-                                    }}
-                                    className="w-full bg-red-50 text-red-500 py-5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2"
-                                >
-                                    <LogOut size={16} /> {t("sign_out")}
-                                </button>
-                            ) : (
-                                <>
-                                    <Link href="/login" className="bg-slate-100 text-slate-950 py-5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] text-center" onClick={() => setIsMenuOpen(false)}>{t("login")}</Link>
-                                    <Link href="/get-started" className="bg-slate-950 text-white py-5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] text-center shadow-2xl" onClick={() => setIsMenuOpen(false)}>{t("create_your_store")}</Link>
-                                </>
-                            )}
-                        </div>
-                    </motion.div>
+                                {isAuthenticated && (
+                                    <div className="mt-6 pt-6 border-t border-slate-50 space-y-4">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{t("account")}</p>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {getRoleLinks().map((link) => (
+                                                <Link 
+                                                    key={link.name}
+                                                    href={link.href}
+                                                    onClick={() => setIsMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 hover:text-blue-600 transition-all group"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                                                        <link.icon size={16} />
+                                                    </div>
+                                                    <span className="flex-1">{link.name}</span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-3">
+                                {isAuthenticated ? (
+                                    <button 
+                                        onClick={() => {
+                                            logout();
+                                            setIsMenuOpen(false);
+                                        }}
+                                        className="w-full bg-white border border-red-100 text-red-500 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm hover:bg-red-50 transition-all"
+                                    >
+                                        <LogOut size={14} /> {t("sign_out")}
+                                    </button>
+                                ) : (
+                                    <>
+                                        <Link href="/login" className="block w-full bg-white border border-slate-200 text-slate-950 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center shadow-sm" onClick={() => setIsMenuOpen(false)}>{t("login")}</Link>
+                                        <Link href="/get-started" className="block w-full bg-slate-950 text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center shadow-lg active:scale-95 transition-all" onClick={() => setIsMenuOpen(false)}>{t("get_started")}</Link>
+                                    </>
+                                )}
+                            </div>
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
         </nav>

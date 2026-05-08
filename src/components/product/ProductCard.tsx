@@ -34,7 +34,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             whileHover={{ y: -4 }}
             className="group bg-white rounded-2xl overflow-hidden border border-slate-100 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex flex-col h-full"
         >
-            <div className="relative aspect-[4/5] overflow-hidden bg-slate-50 group">
+            <div className="relative aspect-square sm:aspect-[4/5] overflow-hidden bg-slate-50 group">
                 <Link href={`/products/${product.id}`} className="block w-full h-full">
                     <Image
                         src={product.image}
@@ -45,7 +45,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
                     {/* Discount Badge */}
                     {discount > 0 && (
-                        <div className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow-lg z-10">
+                        <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-600 text-white text-[8px] sm:text-[10px] font-black px-2 sm:px-2.5 py-1 rounded-md sm:rounded-lg shadow-lg z-10">
                             {discount}% OFF
                         </div>
                     )}
@@ -57,16 +57,28 @@ const ProductCard = ({ product }: ProductCardProps) => {
                             e.stopPropagation();
                             toggleWishlist(product);
                         }}
-                        className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all z-10 ${
-                            isFavorite ? "bg-rose-500 text-white shadow-rose-200" : "bg-white text-slate-400 hover:text-rose-500"
+                        className={`absolute top-2 right-2 sm:top-4 sm:right-4 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all z-10 ${
+                            isFavorite ? "bg-rose-500 text-white shadow-rose-200" : "bg-white/80 backdrop-blur-md text-slate-400 hover:text-rose-500"
                         } shadow-lg`}
                     >
-                        <Heart size={14} className={isFavorite ? "fill-white" : ""} />
+                        <Heart size={12} className={isFavorite ? "fill-white" : ""} />
                     </button>
                 </Link>
 
-                {/* Quick Add Overlay */}
-                <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-4 z-20 pointer-events-none group-hover:pointer-events-auto">
+                {/* Quick Add Button - Visible on Mobile Bottom Right */}
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addToCart(product, 1);
+                    }}
+                    className="absolute bottom-2 right-2 w-8 h-8 bg-slate-950 text-white rounded-lg flex items-center justify-center shadow-xl transition-all active:scale-90 z-20 sm:hidden"
+                >
+                    <ShoppingCart size={14} />
+                </button>
+
+                {/* Desktop Quick Add Overlay */}
+                <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center gap-2 p-4 z-20 pointer-events-none group-hover:pointer-events-auto">
                     <button
                         onClick={(e) => {
                             e.preventDefault();
@@ -84,39 +96,39 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
 
             {/* Content Area */}
-            <div className="p-5 flex flex-col flex-1">
+            <div className="p-3 sm:p-5 flex flex-col flex-1">
                 {/* Merchant & Tag */}
-                <div className="flex items-center justify-between mb-3">
-                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest px-2 py-0.5 bg-blue-50 rounded italic">
+                <div className="flex items-center justify-between mb-1.5 sm:mb-3">
+                    <span className="text-[8px] sm:text-[9px] font-black text-blue-600 uppercase tracking-widest px-1.5 sm:px-2 py-0.5 bg-blue-50 rounded italic truncate max-w-[70%]">
                         {product.merchantName || "Verified Store"}
                     </span>
                     <div className="flex items-center gap-1">
-                        <Star size={10} className="fill-amber-400 text-amber-400" />
-                        <span className="text-[10px] font-black text-slate-900">{product.merchantRating || "4.5"}</span>
+                        <Star size={9} className="fill-amber-400 text-amber-400" />
+                        <span className="text-[9px] sm:text-[10px] font-black text-slate-900">{product.merchantRating || "4.5"}</span>
                     </div>
                 </div>
 
                 <Link href={`/products/${product.id}`}>
-                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight line-clamp-2 leading-snug mb-4 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-[11px] sm:text-sm font-black text-slate-900 uppercase tracking-tight line-clamp-2 leading-snug mb-2 sm:mb-4 group-hover:text-blue-600 transition-colors">
                         {product.name}
                     </h3>
                 </Link>
 
                 {/* Logistics Preview */}
-                <div className="mt-auto space-y-3">
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-black text-slate-950">QAR {product.price}</span>
+                <div className="mt-auto space-y-2 sm:space-y-3">
+                    <div className="flex items-baseline gap-1.5 sm:gap-2">
+                        <span className="text-base sm:text-xl font-black text-slate-950">QAR {product.price}</span>
                         {product.originalPrice && (
-                            <span className="text-xs font-bold text-slate-400 line-through">QAR {product.originalPrice}</span>
+                            <span className="text-[9px] sm:text-xs font-bold text-slate-400 line-through">QAR {product.originalPrice}</span>
                         )}
                     </div>
 
-                    <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
+                    <div className="pt-2 sm:pt-3 border-t border-slate-50 flex items-center justify-between">
                         <div className="flex items-center gap-1.5 text-slate-400">
-                            <Truck size={12} strokeWidth={2.5} />
-                            <span className="text-[9px] font-black uppercase tracking-widest">{product.deliveryTime || "2-3 Days"}</span>
+                            <Truck size={10} className="sm:w-3 sm:h-3" strokeWidth={2.5} />
+                            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">{product.deliveryTime || "2-3 Days"}</span>
                         </div>
-                        <ShieldCheck size={12} className="text-blue-500" />
+                        <ShieldCheck size={10} className="text-blue-500 sm:w-3 sm:h-3" />
                     </div>
                 </div>
             </div>

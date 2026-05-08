@@ -94,20 +94,22 @@ export default function ProductsPage() {
     const fashionProducts = allProducts.filter(p => p.category === "Apparel");
 
     const CategoryGridCard = ({ title, items, linkText }: { title: string, items: { name: string, image: string, href: string }[], linkText: string }) => (
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter mb-4 italic leading-tight">{title}</h3>
-            <div className="grid grid-cols-2 gap-4 flex-1">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full hover:border-blue-600/20 transition-all">
+            <h3 className="text-[11px] sm:text-sm font-black text-slate-900 uppercase tracking-tighter mb-2 sm:mb-4 italic leading-tight flex items-center gap-2">
+                <Sparkles size={12} className="text-blue-600" /> {title}
+            </h3>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 flex-1">
                 {items.map((item, i) => (
-                    <Link key={i} href={item.href} className="group/item flex flex-col gap-2">
-                        <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-50 border border-slate-50">
+                    <Link key={i} href={item.href} className="group/item flex flex-col gap-1.5">
+                        <div className="relative aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-slate-50 border border-slate-50">
                             <Image src={item.image} alt={item.name} fill className="object-cover group-hover/item:scale-110 transition-transform duration-500" />
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500 line-clamp-1">{item.name}</span>
+                        <span className="text-[9px] font-bold text-slate-500 line-clamp-1">{item.name}</span>
                     </Link>
                 ))}
             </div>
-            <Link href="/products" className="mt-6 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline inline-flex items-center gap-2">
-                {linkText} <ArrowRight size={12} />
+            <Link href="/products" className="mt-4 sm:mt-6 text-[9px] font-black text-blue-600 uppercase tracking-widest hover:underline inline-flex items-center gap-2">
+                {linkText} <ArrowRight size={10} />
             </Link>
         </div>
     );
@@ -129,10 +131,10 @@ export default function ProductsPage() {
 
             {/* Announcement Ticker */}
             {settings?.announcement_ticker && (
-                <div className="pt-20 bg-slate-950 text-white py-2 overflow-hidden">
+                <div className="pt-16 sm:pt-20 bg-slate-950 text-white py-1 sm:py-2 overflow-hidden">
                     <div className="whitespace-nowrap animate-marquee flex items-center gap-10">
                         {Array(5).fill(0).map((_, i) => (
-                            <span key={i} className="text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-4">
+                            <span key={i} className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-4">
                                 <Sparkles size={10} className="text-blue-400" />
                                 {settings.announcement_ticker}
                             </span>
@@ -151,12 +153,12 @@ export default function ProductsPage() {
                                 <button
                                     key={cat.name}
                                     onClick={() => setSelectedCategory(cat.name)}
-                                    className={`flex flex-col items-center gap-1.5 group transition-all ${selectedCategory === cat.name ? "opacity-100" : "opacity-60 hover:opacity-100"}`}
+                                    className={`flex flex-col items-center gap-1 sm:gap-1.5 group transition-all ${selectedCategory === cat.name ? "opacity-100" : "opacity-60 hover:opacity-100"}`}
                                 >
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${selectedCategory === cat.name ? "bg-blue-600 text-white shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"}`}>
-                                        <Icon size={18} strokeWidth={selectedCategory === cat.name ? 2.5 : 2} />
+                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all ${selectedCategory === cat.name ? "bg-blue-600 text-white shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"}`}>
+                                        <Icon size={14} className="sm:w-[18px] sm:h-[18px]" strokeWidth={selectedCategory === cat.name ? 2.5 : 2} />
                                     </div>
-                                    <span className={`text-[9px] font-black uppercase tracking-widest ${selectedCategory === cat.name ? "text-blue-600" : "text-slate-500"}`}>{cat.name}</span>
+                                    <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-widest ${selectedCategory === cat.name ? "text-blue-600" : "text-slate-500"}`}>{cat.name}</span>
                                 </button>
                             );
                         })}
@@ -176,7 +178,7 @@ export default function ProductsPage() {
                         >
                             {/* Hero Section */}
                             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                                <div className="lg:col-span-4 bg-white rounded-2xl relative overflow-hidden group shadow-xl h-[500px]">
+                                <div className="lg:col-span-4 bg-white rounded-2xl relative overflow-hidden group shadow-xl h-[300px] sm:h-[400px] lg:h-[500px]">
                                     {banners[0].image_url ? (
                                         <div className="absolute inset-0">
                                             <Image 
@@ -191,11 +193,11 @@ export default function ProductsPage() {
                                         <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-white" />
                                     )}
                                     
-                                    <div className="absolute inset-0 z-10 p-12 lg:p-20 flex flex-col justify-center max-w-2xl">
+                                    <div className="absolute inset-0 z-10 p-6 sm:p-12 lg:p-20 flex flex-col justify-center max-w-2xl">
                                         <motion.span
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            className={`${banners[0].image_url ? 'text-blue-400' : 'text-blue-600'} text-xs font-black uppercase tracking-[0.4em] mb-4 flex items-center gap-2`}
+                                            className={`${banners[0].image_url ? 'text-blue-400' : 'text-blue-600'} text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] mb-4 flex items-center gap-2`}
                                         >
                                             <Sparkles size={14} className="fill-current" /> {banners[0].subtitle || "New Collection 2026"}
                                         </motion.span>
@@ -203,14 +205,14 @@ export default function ProductsPage() {
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.1 }}
-                                            className={`text-5xl lg:text-7xl font-black ${banners[0].image_url ? 'text-white' : 'text-slate-950'} tracking-tighter uppercase leading-[0.85] mb-10 italic`}
+                                            className={`text-3xl sm:text-5xl lg:text-7xl font-black ${banners[0].image_url ? 'text-white' : 'text-slate-950'} tracking-tighter uppercase leading-[0.85] mb-6 sm:mb-10 italic`}
                                         >
                                             {banners[0].title}
                                         </motion.h2>
                                         <div className="flex gap-4">
                                             <Link 
                                                 href={banners[0].link || "/products"}
-                                                className="bg-white text-slate-950 px-12 py-5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-blue-600 hover:text-white transition-all active:scale-95"
+                                                className="bg-white text-slate-950 px-6 sm:px-12 py-3 sm:py-5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-blue-600 hover:text-white transition-all active:scale-95"
                                             >
                                                 Explore Collection
                                             </Link>
@@ -268,7 +270,7 @@ export default function ProductsPage() {
                                 subtitle="Top performing items from verified merchants"
                             >
                                 {trendingProducts.map(p => (
-                                    <div key={p.id} className="w-[280px] shrink-0">
+                                    <div key={p.id} className="w-[180px] sm:w-[280px] shrink-0">
                                         <ProductCard product={p} />
                                     </div>
                                 ))}
@@ -327,7 +329,7 @@ export default function ProductsPage() {
                                 subtitle="Upgrade your setup with these price cuts"
                             >
                                 {electronicsProducts.map(p => (
-                                    <div key={p.id} className="w-[300px] shrink-0">
+                                    <div key={p.id} className="w-[180px] sm:w-[300px] shrink-0">
                                         <ProductCard product={p} />
                                     </div>
                                 ))}
@@ -373,7 +375,7 @@ export default function ProductsPage() {
                             </div>
 
                             {filteredProducts.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+                                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-3 sm:gap-x-6 gap-y-6 sm:gap-y-10">
                                     {filteredProducts.map((product) => (
                                         <ProductCard key={product.id} product={product} />
                                     ))}
@@ -435,26 +437,7 @@ export default function ProductsPage() {
                 </div>
             </section>
 
-            <section className="py-24 bg-white border-t border-slate-100">
-                <div className="section-padding py-0">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                        {[
-                            { title: "Global Logistics", desc: "Express delivery powered by Logis infrastructure.", icon: Clock },
-                            { title: "Verified Brands", desc: "Every merchant undergoes rigorous quality checks.", icon: Award },
-                            { title: "Real-time Tracking", desc: "Follow your order from warehouse to doorstep.", icon: BarChart3 },
-                            { title: "Safe Payments", desc: "PCI-DSS compliant encrypted transactions.", icon: ShieldCheck },
-                        ].map((item, i) => (
-                            <div key={i} className="flex flex-col gap-4">
-                                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-950">
-                                    <item.icon size={24} />
-                                </div>
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">{item.title}</h4>
-                                <p className="text-xs text-slate-500 font-bold">{item.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+
 
             <Footer />
         </main>
