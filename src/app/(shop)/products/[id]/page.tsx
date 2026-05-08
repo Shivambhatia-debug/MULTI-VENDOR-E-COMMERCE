@@ -94,7 +94,7 @@ export default function ProductDetailPage() {
 
     return (
         <main className="min-h-screen bg-white">
-            <Navbar />
+            <Navbar invert={true} />
 
             <div className="pt-16 pb-32 sm:pb-12 section-padding">
                 {/* Breadcrumbs */}

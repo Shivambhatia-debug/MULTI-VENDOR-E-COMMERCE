@@ -127,7 +127,7 @@ export default function ProductsPage() {
 
     return (
         <main className="min-h-screen bg-[#f1f3f6]">
-            <Navbar />
+            <Navbar invert={true} />
 
             {/* Announcement Ticker */}
             {settings?.announcement_ticker && (
