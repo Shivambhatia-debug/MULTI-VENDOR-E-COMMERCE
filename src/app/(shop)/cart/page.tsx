@@ -20,32 +20,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCart } from "@/context/CartContext";
 
 export default function CartPage() {
-    // Mock cart data using existing products
-    const [cartItems, setCartItems] = useState([
-        { ...products[0], quantity: 1 },
-        { ...products[1], quantity: 2 }
-    ]);
+    const { cartItems, updateQuantity, removeFromCart, subtotal, isLoading } = useCart();
 
     const [couponCode, setCouponCode] = useState("");
     const [isCouponApplied, setIsCouponApplied] = useState(false);
 
-    const updateQuantity = (id: string, delta: number) => {
-        setCartItems(items => items.map(item =>
-            item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
-        ));
-    };
-
-    const removeItem = (id: string) => {
-        setCartItems(items => items.filter(item => item.id !== id));
-    };
-
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const shipping = subtotal > 500 ? 0 : 25;
     const tax = subtotal * 0.15; // 15% VAT
     const discount = isCouponApplied ? subtotal * 0.2 : 0; // 20% discount
     const total = subtotal + shipping + tax - discount;
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#f8f9fb]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-[#f8f9fb]">
@@ -69,7 +63,7 @@ export default function CartPage() {
                             <AnimatePresence mode="popLayout">
                                 {cartItems.map((item) => (
                                     <motion.div
-                                        key={item.id}
+                                        key={item.product.id}
                                         layout
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -77,29 +71,29 @@ export default function CartPage() {
                                         className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-6 relative group"
                                     >
                                         <div className="w-full sm:w-40 aspect-square rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 relative">
-                                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                            <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
                                         </div>
 
                                         <div className="flex-1 flex flex-col">
                                             <div className="flex justify-between items-start mb-2">
                                                 <div>
-                                                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest block mb-1 italic">{item.category}</span>
-                                                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{item.name}</h3>
+                                                    <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest block mb-1 italic">{item.product.category}</span>
+                                                    <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{item.product.name}</h3>
                                                 </div>
                                                 <button
-                                                    onClick={() => removeItem(item.id)}
+                                                    onClick={() => removeFromCart(item.product.id)}
                                                     className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white"
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>
                                             </div>
 
-                                            <p className="text-xs text-slate-400 font-bold mb-6 line-clamp-1">Sold by {item.merchantName}</p>
+                                            <p className="text-xs text-slate-400 font-bold mb-6 line-clamp-1">Sold by {item.product.merchantName}</p>
 
                                             <div className="mt-auto flex items-center justify-between">
                                                 <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
                                                     <button
-                                                        onClick={() => updateQuantity(item.id, -1)}
+                                                        onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                                                         className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 hover:text-slate-950 transition-all disabled:opacity-30"
                                                         disabled={item.quantity <= 1}
                                                     >
@@ -107,7 +101,7 @@ export default function CartPage() {
                                                     </button>
                                                     <span className="text-sm font-black text-slate-950 w-6 text-center">{item.quantity}</span>
                                                     <button
-                                                        onClick={() => updateQuantity(item.id, 1)}
+                                                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                                                         className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-400 hover:text-slate-950 transition-all"
                                                     >
                                                         <Plus size={14} />
@@ -115,8 +109,8 @@ export default function CartPage() {
                                                 </div>
 
                                                 <div className="text-right">
-                                                    <span className="text-sm text-slate-400 font-bold block mb-0.5">QAR {item.price} each</span>
-                                                    <span className="text-xl font-black text-slate-950 tracking-tighter">QAR {item.price * item.quantity}</span>
+                                                    <span className="text-sm text-slate-400 font-bold block mb-0.5">QAR {item.product.price} each</span>
+                                                    <span className="text-xl font-black text-slate-950 tracking-tighter">QAR {item.product.price * item.quantity}</span>
                                                 </div>
                                             </div>
                                         </div>

@@ -1,13 +1,16 @@
 "use client";
 
 import { Smartphone, Bell, Heart, Star, CheckCircle2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function AppSection() {
+    const { t, language } = useLanguage();
+
     const appFeatures = [
-        { icon: Bell, title: "Real-time Alerts", sub: "Instant order updates" },
-        { icon: Heart, title: "Loyalty Engine", sub: "Manage customer rewards" },
-        { icon: Star, title: "Insights", sub: "Customer sentiment analysis" },
-        { icon: Smartphone, title: "Live Support", sub: "Direct merchant chat" },
+        { icon: Bell, title: t("real_time_alerts"), sub: t("instant_order_updates") },
+        { icon: Heart, title: t("loyalty_engine"), sub: t("manage_customer_rewards") },
+        { icon: Star, title: t("insights"), sub: t("customer_sentiment") },
+        { icon: Smartphone, title: t("live_support"), sub: t("direct_merchant_chat") },
     ];
 
     return (
@@ -16,26 +19,25 @@ export default function AppSection() {
             <div className="absolute top-0 left-0 w-full h-full bg-slate-800/10 pointer-events-none" />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
-                <div className="max-w-2xl px-6 lg:px-0">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-12">
+                <div className={`max-w-2xl px-6 lg:px-0 ${language === 'ar' ? 'text-right' : ''}`}>
+                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-12 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
                         <Smartphone size={12} />
-                        <span>Merchant Mobile App</span>
+                        <span>{t("merchant_mobile_app")}</span>
                     </div>
 
                     <h2 className="text-4xl lg:text-7xl font-black mb-10 leading-[0.9] tracking-tighter uppercase">
-                        Run Your <br />
-                        <span className="text-slate-400">Business Anywhere.</span>
+                        {t("run_your")} <br />
+                        <span className="text-slate-400">{t("business_anywhere")}</span>
                     </h2>
 
                     <p className="text-base text-slate-500 mb-14 leading-relaxed font-medium max-w-xl">
-                        Our merchant app puts your entire store in your pocket.
-                        Manage products, track orders, and see your sales in real-time, from any location.
+                        {t("app_desc")}
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-16">
                         {appFeatures.map((item, i) => (
-                            <div key={i} className="flex items-center gap-4 bg-white/3 border border-white/5 p-5 rounded-2xl hover:bg-white/10 transition-all duration-500 border-white/5">
-                                <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white">
+                            <div key={i} className={`flex items-center gap-4 bg-white/3 border border-white/5 p-5 rounded-2xl hover:bg-white/10 transition-all duration-500 ${language === 'ar' ? 'flex-row-reverse text-right' : ''}`}>
+                                <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center text-white shrink-0">
                                     <item.icon size={20} />
                                 </div>
                                 <div>
@@ -62,7 +64,7 @@ export default function AppSection() {
                                     </div>
                                     <div className="space-y-6">
                                         <div className="space-y-1">
-                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total Sales</p>
+                                            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{t("total_sales")}</p>
                                             <p className="text-xl font-black text-slate-950 tracking-tighter">QAR 12,450.00</p>
                                         </div>
 
@@ -77,17 +79,17 @@ export default function AppSection() {
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                                                <p className="text-[7px] font-black text-slate-400 uppercase">Orders</p>
+                                                <p className="text-[7px] font-black text-slate-400 uppercase">{t("orders")}</p>
                                                 <p className="text-sm font-black text-slate-900">142</p>
                                             </div>
                                             <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                                                <p className="text-[7px] font-black text-slate-400 uppercase">Visits</p>
+                                                <p className="text-[7px] font-black text-slate-400 uppercase">{t("visits")}</p>
                                                 <p className="text-sm font-black text-slate-900">2.1K</p>
                                             </div>
                                         </div>
 
                                         <div className="space-y-3">
-                                            <p className="text-[7px] font-black text-slate-400 uppercase">Recent Activity</p>
+                                            <p className="text-[7px] font-black text-slate-400 uppercase">{t("recent_activity")}</p>
                                             {[1, 2].map((i) => (
                                                 <div key={i} className="flex justify-between items-center p-2 bg-white rounded-lg border border-slate-50 shadow-sm">
                                                     <div className="w-6 h-6 bg-slate-100 rounded flex items-center justify-center text-[8px] font-bold">#{840 + i}</div>
@@ -108,14 +110,14 @@ export default function AppSection() {
                         </div>
 
                         {/* Floating Interaction UI */}
-                        <div className="absolute top-1/2 -left-12 bg-white/95 backdrop-blur-xl p-4 rounded-xl shadow-2xl border border-white/20 hidden md:block animate-bounce-slow">
+                        <div className={`absolute top-1/2 ${language === 'ar' ? '-right-12' : '-left-12'} bg-white/95 backdrop-blur-xl p-4 rounded-xl shadow-2xl border border-white/20 hidden md:block animate-bounce-slow`}>
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
                                     <CheckCircle2 size={16} />
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-800 uppercase tracking-tight">Order #842</p>
-                                    <p className="text-[9px] text-slate-500">Shipped successfully</p>
+                                    <p className="text-[9px] text-slate-500">{t("shipped_successfully")}</p>
                                 </div>
                             </div>
                         </div>

@@ -21,24 +21,87 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/context/CartContext";
+import { useMerchant } from "@/context/MerchantContext";
 
 export default function CheckoutPage() {
     const router = useRouter();
+    const { cartItems, subtotal, clearCart } = useCart();
+    const { user } = useMerchant();
     const [selectedPayment, setSelectedPayment] = useState("card");
     const [couponCode, setCouponCode] = useState("");
     const [isCouponApplied, setIsCouponApplied] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: "",
+        phone: "",
+        address: "",
+        city: "Doha",
+        zip: ""
+    });
 
-    // Mock data for summary
-    const subtotal = products[0].price + (products[1].price * 2);
-    const shipping = 0;
+    const shipping = subtotal > 500 ? 0 : 25;
     const tax = subtotal * 0.15;
     const discount = isCouponApplied ? subtotal * 0.2 : 0;
     const total = subtotal + shipping + tax - discount;
 
-    const handlePayment = (e: React.FormEvent) => {
+    const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulate payment processing flow
-        router.push("/payment/success");
+        setIsSubmitting(true);
+        
+        try {
+            const token = localStorage.getItem("golalita_token");
+            
+            // Group items by merchant_id to create separate orders if needed
+            // For now, we create one order per merchant represented in the cart
+            const merchants = Array.from(new Set(cartItems.map(item => item.product.merchant_id)));
+            
+            for (const mId of merchants) {
+                const merchantItems = cartItems.filter(item => item.product.merchant_id === mId);
+                const merchantSubtotal = merchantItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
+                
+                const orderData = {
+                    customer_name: formData.fullName || user?.name || "Guest Customer",
+                    customer_email: user?.email || "guest@golalita.com",
+                    customer_phone: formData.phone || user?.phone || "N/A",
+                    shipping_address: formData.address,
+                    city: formData.city,
+                    zip_code: formData.zip,
+                    items: merchantItems.reduce((acc, item) => acc + item.quantity, 0),
+                    items_details: merchantItems.map(item => ({
+                        id: item.product.id,
+                        name: item.product.name,
+                        image: item.product.image,
+                        price: item.product.price,
+                        quantity: item.quantity
+                    })),
+                    total: `QAR ${merchantSubtotal.toFixed(2)}`,
+                    status: "Processing",
+                    method: selectedPayment.toUpperCase(),
+                    merchant_id: mId,
+                    delivery_estimate: new Date(Date.now() + 3*24*60*60*1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+                };
+
+                const res = await fetch("/api/python/orders", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (!res.ok) throw new Error("Order creation failed");
+            }
+
+            clearCart();
+            router.push("/payment/success");
+        } catch (err) {
+            console.error("ORDER_PLACEMENT_ERROR:", err);
+            alert("Failed to place order. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -75,15 +138,57 @@ export default function CheckoutPage() {
                             <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                                    <input type="text" placeholder="Shivalik" className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
+                                    <input 
+                                        type="text" 
+                                        required
+                                        placeholder="Shivalik" 
+                                        value={formData.fullName}
+                                        onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" 
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                                    <input type="text" placeholder="+974 0000 0000" className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
+                                    <input 
+                                        type="text" 
+                                        required
+                                        placeholder="+974 0000 0000" 
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" 
+                                    />
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">delivery Address</label>
-                                    <input type="text" placeholder="Doha, Qatar - West Bay, Tower 4, Apt 402" className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
+                                    <input 
+                                        type="text" 
+                                        required
+                                        placeholder="Doha, Qatar - West Bay, Tower 4, Apt 402" 
+                                        value={formData.address}
+                                        onChange={(e) => setFormData({...formData, address: e.target.value})}
+                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" 
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City</label>
+                                    <input 
+                                        type="text" 
+                                        required
+                                        placeholder="Doha" 
+                                        value={formData.city}
+                                        onChange={(e) => setFormData({...formData, city: e.target.value})}
+                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" 
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Zip / Postal Code</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="00000" 
+                                        value={formData.zip}
+                                        onChange={(e) => setFormData({...formData, zip: e.target.value})}
+                                        className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" 
+                                    />
                                 </div>
                             </form>
                         </motion.section>
@@ -153,27 +258,19 @@ export default function CheckoutPage() {
                         >
                             <h2 className="text-2xl font-black uppercase tracking-tighter mb-8 italic">Review Order</h2>
 
-                            <div className="space-y-6 mb-10">
-                                <div className="flex gap-4">
-                                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/10 shrink-0">
-                                        <Image src={products[0].image} alt="" width={64} height={64} className="object-cover w-full h-full" />
+                            <div className="space-y-6 mb-10 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+                                {cartItems.map((item) => (
+                                    <div key={item.product.id} className="flex gap-4">
+                                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/10 shrink-0 relative">
+                                            <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1">{item.product.name}</h4>
+                                            <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">Qty: {item.quantity}</p>
+                                            <p className="text-xs font-black mt-1">QAR {(item.product.price * item.quantity).toFixed(2)}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1">{products[0].name}</h4>
-                                        <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">Qty: 1</p>
-                                        <p className="text-xs font-black mt-1">QAR {products[0].price}</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/10 shrink-0">
-                                        <Image src={products[1].image} alt="" width={64} height={64} className="object-cover w-full h-full" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1">{products[1].name}</h4>
-                                        <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">Qty: 2</p>
-                                        <p className="text-xs font-black mt-1">QAR {products[1].price * 2}</p>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
 
                             <div className="space-y-4 mb-8 border-t border-white/10 pt-8">

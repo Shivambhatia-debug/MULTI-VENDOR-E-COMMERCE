@@ -71,6 +71,13 @@ async def get_public_store(store_id: str):
 
     # Try subdomain resolve
     config = await db.store_configs.find_one({"subdomain": store_id, "is_published": True, "is_approved": True})
+    
+    if not config:
+        # Try ID resolve
+        try:
+            config = await db.store_configs.find_one({"_id": ObjectId(store_id), "is_published": True, "is_approved": True})
+        except:
+            pass
 
     if not config:
         return {"error": "Store not found or not published"}
@@ -157,7 +164,53 @@ async def list_all_public_products():
             if store_config:
                 product["merchantName"] = store_config.get("store_name", "Store")
                 product["merchantSubdomain"] = store_config.get("subdomain", "")
-
+        
         products.append(product)
 
     return products
+
+
+@router.get("/products/{product_id}")
+@router.get("/products/{product_id}/")
+async def get_public_product(product_id: str):
+    """Get a single product by ID for the public marketplace."""
+    db = await get_database()
+    
+    try:
+        product = await db.products.find_one({"_id": ObjectId(product_id)})
+    except:
+        return {"error": "Invalid product ID"}
+        
+    if not product:
+        return {"error": "Product not found"}
+        
+    product["id"] = str(product["_id"])
+    product.pop("_id", None)
+    
+    # Check if merchant is published
+    merchant_id = product.get("merchant_id")
+    config = await db.store_configs.find_one({"merchant_id": merchant_id, "is_published": True, "is_approved": True})
+    
+    if not config:
+        return {"error": "Product not available or store not published"}
+        
+    product["merchantName"] = config.get("store_name", "Store")
+    product["merchantSubdomain"] = config.get("subdomain", "")
+    
+    return product
+
+
+@router.get("/marketplace/settings")
+@router.get("/marketplace/settings/")
+async def get_public_marketplace_settings():
+    db = await get_database()
+    settings = await db.platform_settings.find_one({"type": "marketplace"})
+    if not settings:
+        return {
+            "banners": [],
+            "categories": [],
+            "announcement_ticker": "Welcome to Golalita Marketplace - The Future of Qatari Commerce"
+        }
+    settings["id"] = str(settings["_id"])
+    settings.pop("_id", None)
+    return settings

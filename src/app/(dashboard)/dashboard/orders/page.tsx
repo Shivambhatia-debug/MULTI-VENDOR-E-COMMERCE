@@ -29,6 +29,8 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<any>(null);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -173,8 +175,11 @@ export default function OrdersPage() {
                                                 </span>
                                             </td>
                                             <td className="p-8 text-right">
-                                                <button className="p-3 hover:bg-white hover:shadow-lg border border-transparent hover:border-slate-100 rounded-2xl text-slate-400 hover:text-slate-950 transition-all">
-                                                    <MoreHorizontal size={20} />
+                                                <button 
+                                                    onClick={() => setSelectedOrder(order)}
+                                                    className="p-3 hover:bg-white hover:shadow-lg border border-transparent hover:border-slate-100 rounded-2xl text-slate-400 hover:text-slate-950 transition-all"
+                                                >
+                                                    <Eye size={20} />
                                                 </button>
                                             </td>
                                         </tr>
@@ -196,6 +201,127 @@ export default function OrdersPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Order Detail Modal */}
+            {selectedOrder && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
+                    <div className="bg-white rounded-[3rem] w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                        <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                            <div>
+                                <h3 className="text-xl font-black text-slate-950 uppercase tracking-tighter italic">Order Protocol Detail</h3>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">#ORD-{selectedOrder.id.toUpperCase()}</p>
+                            </div>
+                            <button onClick={() => setSelectedOrder(null)} className="p-4 hover:bg-white rounded-2xl transition-all text-slate-400 hover:text-slate-950 shadow-sm border border-transparent hover:border-slate-100">
+                                <Plus className="rotate-45" size={20} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-10 space-y-8 max-h-[60vh] overflow-y-auto no-scrollbar">
+                            {/* Customer & Shipping Section */}
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <Phone size={12} /> Entity Contact
+                                    </h4>
+                                    <p className="text-sm font-black text-slate-950 uppercase">{selectedOrder.customer_name}</p>
+                                    <p className="text-[10px] font-bold text-slate-500">{selectedOrder.customer_email}</p>
+                                    <p className="text-[10px] font-bold text-slate-500">{selectedOrder.customer_phone}</p>
+                                </div>
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <MapPin size={12} /> Shipping Node
+                                    </h4>
+                                    <p className="text-[10px] font-bold text-slate-950 leading-relaxed uppercase">
+                                        {selectedOrder.shipping_address || "NO ADDRESS DATA"}<br />
+                                        {selectedOrder.city}, {selectedOrder.zip_code}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-slate-50" />
+
+                            {/* Status & Tracking Update */}
+                            <div className="space-y-6">
+                                <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest italic">Update Fulfillment Parameters</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Process Status</label>
+                                        <select 
+                                            value={selectedOrder.status}
+                                            onChange={async (e) => {
+                                                const newStatus = e.target.value;
+                                                setIsUpdating(true);
+                                                try {
+                                                    const token = localStorage.getItem("golalita_token");
+                                                    const res = await fetch(`/api/python/orders/${selectedOrder.id}`, {
+                                                        method: "PATCH",
+                                                        headers: { 
+                                                            "Authorization": `Bearer ${token}`,
+                                                            "Content-Type": "application/json"
+                                                        },
+                                                        body: JSON.stringify({ status: newStatus })
+                                                    });
+                                                    if (res.ok) {
+                                                        const updated = await res.json();
+                                                        setOrders(orders.map(o => o.id === updated.id ? updated : o));
+                                                        setSelectedOrder(updated);
+                                                    }
+                                                } catch (err) { console.error(err); } finally { setIsUpdating(false); }
+                                            }}
+                                            className="w-full bg-slate-50 border-none rounded-xl p-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-slate-950 transition-all appearance-none"
+                                        >
+                                            <option value="Processing">Processing</option>
+                                            <option value="Fulfilled">Fulfilled</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Tracking ID</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="GOL-TRK-XXXX"
+                                            value={selectedOrder.tracking_id || ""}
+                                            onChange={async (e) => {
+                                                const val = e.target.value;
+                                                setSelectedOrder({...selectedOrder, tracking_id: val});
+                                            }}
+                                            onBlur={async () => {
+                                                setIsUpdating(true);
+                                                try {
+                                                    const token = localStorage.getItem("golalita_token");
+                                                    const res = await fetch(`/api/python/orders/${selectedOrder.id}`, {
+                                                        method: "PATCH",
+                                                        headers: { 
+                                                            "Authorization": `Bearer ${token}`,
+                                                            "Content-Type": "application/json"
+                                                        },
+                                                        body: JSON.stringify({ tracking_id: selectedOrder.tracking_id })
+                                                    });
+                                                    if (res.ok) {
+                                                        const updated = await res.json();
+                                                        setOrders(orders.map(o => o.id === updated.id ? updated : o));
+                                                    }
+                                                } catch (err) { console.error(err); } finally { setIsUpdating(false); }
+                                            }}
+                                            className="w-full bg-slate-50 border-none rounded-xl p-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-slate-950 transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-10 bg-slate-50/50 border-t border-slate-50 flex justify-between items-center">
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Revenue Impact</span>
+                                <span className="text-2xl font-black text-slate-950 tracking-tighter italic">{selectedOrder.total}</span>
+                            </div>
+                            {isUpdating && <div className="flex items-center gap-2 text-[9px] font-black text-blue-600 animate-pulse uppercase"><Clock size={12} /> Syncing...</div>}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

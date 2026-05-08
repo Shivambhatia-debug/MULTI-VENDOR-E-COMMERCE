@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.database import get_database
 from app.routes.auth import get_current_user
+from bson import ObjectId
+from datetime import datetime
 
 router = APIRouter(prefix="/api/admin", tags=["admin"], redirect_slashes=False)
 
@@ -166,7 +168,6 @@ async def get_all_stores(current_user: dict = Depends(get_current_user)):
         merchant = None
         if m_id:
             try:
-                from bson import ObjectId
                 merchant = await db.users.find_one({"_id": ObjectId(m_id)})
             except:
                 merchant = await db.users.find_one({"_id": m_id})
@@ -185,6 +186,7 @@ async def get_all_stores(current_user: dict = Depends(get_current_user)):
     return enriched_stores
 
 @router.get("/verification/pending")
+@router.get("/verification/pending/")
 async def get_pending_verifications(current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -199,7 +201,12 @@ async def get_pending_verifications(current_user: dict = Depends(get_current_use
     enriched = []
     for s in pending_stores:
         m_id = s.get("merchant_id")
-        merchant = await db.users.find_one({"_id": ObjectId(m_id)}) if m_id else None
+        merchant = None
+        if m_id:
+            try:
+                merchant = await db.users.find_one({"_id": ObjectId(m_id)})
+            except:
+                merchant = await db.users.find_one({"_id": m_id})
         
         enriched.append({
             "id": str(s["_id"]),
@@ -212,6 +219,7 @@ async def get_pending_verifications(current_user: dict = Depends(get_current_use
     return enriched
 
 @router.post("/verification/approve/{store_id}")
+@router.post("/verification/approve/{store_id}/")
 async def approve_store(store_id: str, current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -226,6 +234,7 @@ async def approve_store(store_id: str, current_user: dict = Depends(get_current_
     return {"message": "Store approved successfully"}
 
 @router.post("/verification/reject/{store_id}")
+@router.post("/verification/reject/{store_id}/")
 async def reject_store(store_id: str, reason: str = "Does not meet platform guidelines", current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -267,3 +276,53 @@ async def update_marketplace_settings(data: dict, current_user: dict = Depends(g
         upsert=True
     )
     return {"message": "Marketplace settings updated"}
+
+@router.get("/platform/settings")
+async def get_platform_settings(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    settings = await db.platform_settings.find_one({"type": "global"})
+    if not settings:
+        return {
+            "general": {
+                "platform_fee": "2.5",
+                "default_currency": "QAR",
+            },
+            "security": {
+                "mfa_required": False,
+                "session_timeout": "30",
+            },
+            "payments": {
+                "stripe_enabled": True,
+                "payout_schedule": "weekly"
+            },
+            "notifications": {
+                "email_alerts": True,
+                "sms_alerts": False
+            },
+            "region": {
+                "timezone": "Asia/Qatar",
+                "language": "en"
+            }
+        }
+    settings["id"] = str(settings["_id"])
+    settings.pop("_id", None)
+    return settings
+
+@router.post("/platform/settings")
+async def update_platform_settings(data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    # Don't overwrite type
+    data["type"] = "global"
+    await db.platform_settings.update_one(
+        {"type": "global"},
+        {"$set": data},
+        upsert=True
+    )
+    return {"message": "Platform settings updated"}
+

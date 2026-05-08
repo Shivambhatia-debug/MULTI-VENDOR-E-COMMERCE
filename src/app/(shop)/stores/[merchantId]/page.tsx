@@ -163,190 +163,187 @@ export default function MerchantLandingPage() {
                     )}
 
                     {checkoutStep === "checkout" && (
-                        <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden">
+                        <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden text-slate-900">
                             {/* Header */}
-                            <div className="p-6 md:p-10 flex items-center gap-4 bg-white border-b border-slate-100">
-                                <button onClick={() => setCheckoutStep("cart")} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all">
+                            <div className="p-6 flex items-center gap-4 bg-white border-b border-slate-100 shrink-0">
+                                <button onClick={() => setCheckoutStep("cart")} className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all shrink-0">
                                     <ChevronLeft size={20} />
                                 </button>
                                 <div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-slate-950 uppercase tracking-tighter italic">Checkout</h2>
+                                    <h2 className="text-xl md:text-2xl font-black text-slate-950 uppercase tracking-tighter italic">Checkout</h2>
                                     <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">Secure Transaction Protocol</p>
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-10">
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                                    {/* Left: Forms */}
-                                    <div className="lg:col-span-7 space-y-6">
-                                        {/* Shipping */}
-                                        <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm space-y-6">
-                                            <div className="flex items-center gap-4 mb-2">
-                                                <div className="w-10 h-10 bg-slate-950 text-white rounded-xl flex items-center justify-center">
-                                                    <MapPin size={20} />
-                                                </div>
-                                                <h3 className="text-lg font-black uppercase tracking-tighter italic">Shipping Destination</h3>
+                            <div className="flex-1 overflow-y-auto scrollbar-hide p-4 md:p-6">
+                                <div className="flex flex-col gap-6">
+                                    {/* Shipping */}
+                                    <div className="bg-white rounded-3xl p-5 md:p-6 border border-slate-100 shadow-sm space-y-5">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <div className="w-8 h-8 bg-slate-950 text-white rounded-lg flex items-center justify-center shrink-0">
+                                                <MapPin size={16} />
                                             </div>
-                                            <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                                                    <input required type="text" placeholder="John Doe" className="w-full bg-slate-50 border-none rounded-xl p-3.5 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
-                                                </div>
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
-                                                    <input required type="tel" placeholder="+974 0000 0000" className="w-full bg-slate-50 border-none rounded-xl p-3.5 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
-                                                </div>
-                                                <div className="md:col-span-2 space-y-1.5">
-                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Delivery Address</label>
-                                                    <textarea required placeholder="Doha, Qatar..." className="w-full bg-slate-50 border-none rounded-xl p-3.5 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all resize-none h-20" />
-                                                </div>
-                                            </form>
+                                            <h3 className="text-base font-black uppercase tracking-tighter italic">Shipping Destination</h3>
                                         </div>
-
-                                        {/* Payment */}
-                                        <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm space-y-6">
-                                            <div className="flex items-center gap-4 mb-2">
-                                                <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center">
-                                                    <CreditCard size={20} />
+                                        <form className="grid grid-cols-1 gap-4 text-left">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Full Name</label>
+                                                    <input required type="text" placeholder="John Doe" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all outline-none" />
                                                 </div>
-                                                <h3 className="text-lg font-black uppercase tracking-tighter italic">Payment Protocol</h3>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Phone Number</label>
+                                                    <input required type="tel" placeholder="+974 0000" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all outline-none" />
+                                                </div>
                                             </div>
-                                            
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                                {[
-                                                    { id: "card", name: "Card", icon: CreditCard },
-                                                    { id: "apple", name: "Apple", icon: Smartphone },
-                                                    { id: "qpay", name: "QPay", icon: Wallet },
-                                                    { id: "cod", name: "COD", icon: Truck },
-                                                ].map((method) => (
-                                                    <button
-                                                        key={method.id}
-                                                        onClick={() => setSelectedPayment(method.id)}
-                                                        className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${selectedPayment === method.id ? "border-blue-600 bg-blue-50/50" : "border-slate-50 hover:border-slate-100"}`}
-                                                    >
-                                                        <method.icon size={20} className={selectedPayment === method.id ? "text-blue-600" : "text-slate-300"} />
-                                                        <span className={`text-[8px] font-black uppercase tracking-widest ${selectedPayment === method.id ? "text-blue-600" : "text-slate-400"}`}>{method.name}</span>
-                                                    </button>
-                                                ))}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Delivery Address</label>
+                                                <textarea required placeholder="Doha, Qatar..." className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all outline-none resize-none h-20" />
                                             </div>
-
-                                            {selectedPayment === "card" && (
-                                                <div className="space-y-4 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Card Number</label>
-                                                        <input type="text" placeholder="**** **** **** 0000" className="w-full bg-slate-50 border-none rounded-xl p-3.5 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all font-mono" />
-                                                    </div>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="space-y-1.5">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Expiry</label>
-                                                            <input type="text" placeholder="MM/YY" className="w-full bg-slate-50 border-none rounded-xl p-3.5 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
-                                                        </div>
-                                                        <div className="space-y-1.5">
-                                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">CVV</label>
-                                                            <input type="text" placeholder="***" className="w-full bg-slate-50 border-none rounded-xl p-3.5 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {selectedPayment === "cod" && (
-                                                <div className="p-6 bg-slate-50 rounded-2xl flex items-center gap-4 animate-in fade-in duration-300">
-                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
-                                                        <Truck size={20} />
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-[10px] font-black text-slate-900 uppercase">Cash on Delivery</p>
-                                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Pay securely when you receive your items.</p>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
+                                        </form>
                                     </div>
 
-                                    {/* Right: Summary */}
-                                    <div className="lg:col-span-5 space-y-6 sticky top-0">
-                                        <div className="bg-slate-950 rounded-[2.5rem] p-8 text-white shadow-2xl space-y-8">
-                                            <h3 className="text-xl font-black uppercase tracking-tighter italic">Order Review</h3>
-                                            
-                                            <div className="space-y-4 max-h-[200px] overflow-y-auto scrollbar-hide">
-                                                {cartItems.map((item, idx) => (
-                                                    <div key={idx} className="flex gap-4">
-                                                        <div className="w-14 h-14 bg-white/10 rounded-xl overflow-hidden shrink-0">
-                                                            <img src={item.image || "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=100"} className="w-full h-full object-cover" />
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1">{item.name}</h4>
-                                                            <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">${item.price?.toFixed(2)}</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                    {/* Payment */}
+                                    <div className="bg-white rounded-3xl p-5 md:p-6 border border-slate-100 shadow-sm space-y-5">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center shrink-0">
+                                                <CreditCard size={16} />
                                             </div>
-
-                                            {/* Coupon Section */}
-                                            <div className="pt-8 border-t border-white/10 space-y-4">
-                                                <div className="flex gap-2">
-                                                    <input 
-                                                        type="text" 
-                                                        value={couponCode}
-                                                        onChange={(e) => setCouponCode(e.target.value)}
-                                                        placeholder="COUPON CODE" 
-                                                        className="flex-1 bg-white/5 border-none rounded-xl px-4 py-3 text-[9px] font-black uppercase tracking-widest focus:ring-1 focus:ring-blue-500 placeholder:text-white/20" 
-                                                    />
-                                                    <button 
-                                                        onClick={() => { if(couponCode) setIsCouponApplied(true); }}
-                                                        className="px-6 py-3 bg-white/10 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
-                                                    >
-                                                        Apply
-                                                    </button>
-                                                </div>
-                                                {isCouponApplied && (
-                                                    <div className="flex items-center justify-between bg-blue-600/20 text-blue-400 p-3 rounded-xl border border-blue-600/30 animate-in zoom-in-95 duration-300">
-                                                        <div className="flex items-center gap-2">
-                                                            <Tag size={12} />
-                                                            <span className="text-[9px] font-black uppercase tracking-widest">SAV20 Applied (-20%)</span>
-                                                        </div>
-                                                        <button onClick={() => setIsCouponApplied(false)} className="text-xs font-black">×</button>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="space-y-4 pt-6 border-t border-white/10">
-                                                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                    <span>Subtotal</span>
-                                                    <span className="text-white">${cartItems.reduce((acc, curr) => acc + curr.price, 0).toFixed(2)}</span>
-                                                </div>
-                                                {isCouponApplied && (
-                                                    <div className="flex justify-between items-center text-[10px] font-bold text-blue-400 uppercase tracking-widest">
-                                                        <span>Discount</span>
-                                                        <span>-${(cartItems.reduce((acc, curr) => acc + curr.price, 0) * 0.2).toFixed(2)}</span>
-                                                    </div>
-                                                )}
-                                                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                    <span>Tax (15%)</span>
-                                                    <span className="text-white">${((cartItems.reduce((acc, curr) => acc + curr.price, 0) - (isCouponApplied ? cartItems.reduce((acc, curr) => acc + curr.price, 0) * 0.2 : 0)) * 0.15).toFixed(2)}</span>
-                                                </div>
-                                                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                    <span>Delivery</span>
-                                                    <span className="text-emerald-400 italic">FREE</span>
-                                                </div>
-                                                <div className="pt-6 border-t border-white/10 flex justify-between items-center">
-                                                    <span className="text-xs font-black uppercase tracking-widest">Payable</span>
-                                                    <span className="text-3xl font-black tracking-tighter">
-                                                        ${(
-                                                            (cartItems.reduce((acc, curr) => acc + curr.price, 0) - (isCouponApplied ? cartItems.reduce((acc, curr) => acc + curr.price, 0) * 0.2 : 0)) * 1.15
-                                                        ).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <button 
-                                                onClick={handleCheckoutSubmit}
-                                                className="w-full py-5 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] shadow-xl hover:opacity-90 transition-all flex items-center justify-center gap-3 group"
-                                                style={{ backgroundColor: primaryColor }}
-                                            >
-                                                <Lock size={16} /> Confirm & Pay Now
-                                            </button>
+                                            <h3 className="text-base font-black uppercase tracking-tighter italic">Payment Protocol</h3>
                                         </div>
+                                        
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {[
+                                                { id: "card", name: "Card", icon: CreditCard },
+                                                { id: "apple", name: "Apple", icon: Smartphone },
+                                                { id: "qpay", name: "QPay", icon: Wallet },
+                                                { id: "cod", name: "COD", icon: Truck },
+                                            ].map((method) => (
+                                                <button
+                                                    key={method.id}
+                                                    onClick={() => setSelectedPayment(method.id)}
+                                                    className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1.5 ${selectedPayment === method.id ? "border-blue-600 bg-blue-50/50" : "border-slate-50 hover:border-slate-100"}`}
+                                                >
+                                                    <method.icon size={16} className={selectedPayment === method.id ? "text-blue-600" : "text-slate-300"} />
+                                                    <span className={`text-[8px] font-black uppercase tracking-widest ${selectedPayment === method.id ? "text-blue-600" : "text-slate-400"}`}>{method.name}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {selectedPayment === "card" && (
+                                            <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300 text-left">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Card Number</label>
+                                                    <input type="text" placeholder="**** **** **** 0000" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all font-mono outline-none" />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block">Expiry</label>
+                                                        <input type="text" placeholder="MM/YY" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all outline-none" />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1 block">CVV</label>
+                                                        <input type="password" placeholder="***" className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all outline-none" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {selectedPayment === "cod" && (
+                                            <div className="p-4 bg-slate-50 rounded-xl flex items-center gap-3 animate-in fade-in duration-300 text-left">
+                                                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                                                    <Truck size={16} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] font-black text-slate-900 uppercase">Cash on Delivery</p>
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase">Pay securely when items arrive.</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Summary */}
+                                    <div className="bg-slate-950 rounded-3xl p-6 text-white shadow-xl space-y-6">
+                                        <h3 className="text-lg font-black uppercase tracking-tighter italic text-left">Order Review</h3>
+                                        
+                                        <div className="space-y-3 max-h-[150px] overflow-y-auto scrollbar-hide text-left">
+                                            {cartItems.map((item, idx) => (
+                                                <div key={idx} className="flex gap-3 items-center">
+                                                    <div className="w-12 h-12 bg-white/10 rounded-xl overflow-hidden shrink-0">
+                                                        <img src={item.image || "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=100"} className="w-full h-full object-cover" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1">{item.name}</h4>
+                                                        <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">${item.price?.toFixed(2)}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Coupon Section */}
+                                        <div className="pt-6 border-t border-white/10 space-y-4">
+                                            <div className="flex gap-2">
+                                                <input 
+                                                    type="text" 
+                                                    value={couponCode}
+                                                    onChange={(e) => setCouponCode(e.target.value)}
+                                                    placeholder="COUPON CODE" 
+                                                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[9px] font-black uppercase tracking-widest focus:ring-1 focus:ring-blue-500 placeholder:text-white/20 outline-none text-white" 
+                                                />
+                                                <button 
+                                                    onClick={() => { if(couponCode) setIsCouponApplied(true); }}
+                                                    className="px-5 py-3 bg-white/10 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all shrink-0"
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                            {isCouponApplied && (
+                                                <div className="flex items-center justify-between bg-blue-600/20 text-blue-400 p-3 rounded-xl border border-blue-600/30 animate-in zoom-in-95 duration-300">
+                                                    <div className="flex items-center gap-2">
+                                                        <Tag size={12} />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest">SAV20 Applied (-20%)</span>
+                                                    </div>
+                                                    <button onClick={() => setIsCouponApplied(false)} className="text-xs font-black">×</button>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-3 pt-6 border-t border-white/10">
+                                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                <span>Subtotal</span>
+                                                <span className="text-white">${cartItems.reduce((acc, curr) => acc + curr.price, 0).toFixed(2)}</span>
+                                            </div>
+                                            {isCouponApplied && (
+                                                <div className="flex justify-between items-center text-[10px] font-bold text-blue-400 uppercase tracking-widest">
+                                                    <span>Discount</span>
+                                                    <span>-${(cartItems.reduce((acc, curr) => acc + curr.price, 0) * 0.2).toFixed(2)}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                <span>Tax (15%)</span>
+                                                <span className="text-white">${((cartItems.reduce((acc, curr) => acc + curr.price, 0) - (isCouponApplied ? cartItems.reduce((acc, curr) => acc + curr.price, 0) * 0.2 : 0)) * 0.15).toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                <span>Delivery</span>
+                                                <span className="text-emerald-400 italic">FREE</span>
+                                            </div>
+                                            <div className="pt-4 mt-2 border-t border-white/10 flex justify-between items-center">
+                                                <span className="text-xs font-black uppercase tracking-widest">Payable</span>
+                                                <span className="text-2xl font-black tracking-tighter">
+                                                    ${(
+                                                        (cartItems.reduce((acc, curr) => acc + curr.price, 0) - (isCouponApplied ? cartItems.reduce((acc, curr) => acc + curr.price, 0) * 0.2 : 0)) * 1.15
+                                                    ).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <button 
+                                            onClick={handleCheckoutSubmit}
+                                            className="w-full py-4 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 group mt-4"
+                                            style={{ backgroundColor: primaryColor }}
+                                        >
+                                            <Lock size={14} /> Confirm & Pay Now
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -462,21 +459,21 @@ export default function MerchantLandingPage() {
                                     
                                     {/* Action Buttons */}
                                     <div className="flex flex-col gap-4">
-                                        <div className="flex gap-3">
+                                        <div className="flex flex-col sm:flex-row gap-3">
                                             <button 
                                                 onClick={() => addToCart({ ...selectedProduct, size: selectedSize })}
-                                                className="flex-[2] py-5 bg-slate-950 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3 group"
+                                                className="flex-1 py-4 bg-slate-950 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group"
                                             >
-                                                <ShoppingCart size={16} className="group-hover:-translate-y-1 transition-transform" /> Add to Cart
+                                                <ShoppingCart size={16} className="shrink-0 group-hover:-translate-y-1 transition-transform" /> Add to Cart
                                             </button>
                                             <button 
                                                 onClick={() => {
                                                     addToCart({ ...selectedProduct, size: selectedSize });
                                                     setCheckoutStep("checkout");
                                                 }}
-                                                className="flex-1 py-5 bg-blue-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] shadow-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                                className="flex-1 py-4 bg-blue-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
                                             >
-                                                <Zap size={16} /> Buy Now
+                                                <Zap size={16} className="shrink-0 group-hover:scale-110 transition-transform" /> Buy Now
                                             </button>
                                         </div>
                                     </div>

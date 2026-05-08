@@ -4,8 +4,11 @@ import Link from "next/link";
 import { ArrowRight, Play, Zap, ShieldCheck, Sparkles, Orbit } from "lucide-react";
 import { motion } from "framer-motion";
 import ShowcaseMockup from "./ShowcaseMockup";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Hero() {
+    const { t, language } = useLanguage();
+
     return (
         <section className="relative pt-40 pb-32 overflow-hidden bg-white">
             {/* Ambient Background Grid */}
@@ -17,10 +20,10 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "circOut" }}
-                    className="inline-flex items-center gap-3 px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-12 shadow-sm"
+                    className={`inline-flex items-center gap-3 px-4 py-1.5 bg-slate-50 border border-slate-200 rounded-full text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] mb-12 shadow-sm ${language === 'ar' ? 'flex-row-reverse' : ''}`}
                 >
                     <div className="w-1.5 h-1.5 rounded-full bg-slate-900 animate-pulse" />
-                    <span>E-Commerce Store Builder v3.0</span>
+                    <span>{t("store_builder_badge")}</span>
                 </motion.div>
 
                 <motion.h1
@@ -29,8 +32,8 @@ export default function Hero() {
                     transition={{ duration: 1, ease: "anticipate" }}
                     className="text-6xl lg:text-[8rem] font-black text-slate-950 leading-[0.85] mb-12 tracking-tighter max-w-7xl uppercase"
                 >
-                    The New Standard for <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-slate-900">Modern Selling</span>
+                    {t("new_standard_for")} <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-slate-900">{t("modern_selling")}</span>
                 </motion.h1>
 
                 <motion.p
@@ -39,16 +42,15 @@ export default function Hero() {
                     transition={{ delay: 0.5, duration: 1 }}
                     className="text-base lg:text-xl text-slate-500 mb-16 leading-relaxed font-medium max-w-3xl"
                 >
-                    Create a beautiful online store in minutes. One platform for all your products, <br className="hidden lg:block" />
-                    payments, and global customers.
+                    {t("hero_subtitle_2")}
                 </motion.p>
 
                 <div className="flex flex-col sm:flex-row gap-6 mb-24">
                     <Link href="/products" className="btn-primary px-12 py-5 text-[11px] shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
-                        Browse Marketplace
+                        {t("browse_marketplace")}
                     </Link>
                     <Link href="/get-started" className="btn-secondary px-12 py-5 text-[11px]">
-                        Create Your Store
+                        {t("create_your_store")}
                     </Link>
                 </div>
 
@@ -62,21 +64,21 @@ export default function Hero() {
                     <ShowcaseMockup />
 
                     {/* Visual Props */}
-                    <div className="absolute top-1/2 -left-32 -translate-y-1/2 hidden xl:flex flex-col gap-12 items-end">
+                    <div className={`absolute top-1/2 ${language === 'ar' ? '-right-32' : '-left-32'} -translate-y-1/2 hidden xl:flex flex-col gap-12 ${language === 'ar' ? 'items-start' : 'items-end'}`}>
                         <motion.div
-                            whileHover={{ x: 10 }}
-                            className="space-y-3 text-right group cursor-help"
+                            whileHover={{ x: language === 'ar' ? -10 : 10 }}
+                            className={`space-y-3 ${language === 'ar' ? 'text-left' : 'text-right'} group cursor-help`}
                         >
                             <div className="p-4 bg-white/80 backdrop-blur-md shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] rounded-2xl border border-slate-100 flex items-center justify-center text-slate-900 group-hover:bg-slate-950 group-hover:text-white transition-all duration-500"><Orbit size={24} /></div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-950 transition-colors">Global Infrastructure</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-950 transition-colors">{t("global_infrastructure")}</p>
                         </motion.div>
-                        <div className="h-24 w-px bg-slate-100 mr-6" />
+                        <div className={`h-24 w-px bg-slate-100 ${language === 'ar' ? 'ml-6' : 'mr-6'}`} />
                         <motion.div
-                            whileHover={{ x: 10 }}
-                            className="space-y-3 text-right group cursor-help"
+                            whileHover={{ x: language === 'ar' ? -10 : 10 }}
+                            className={`space-y-3 ${language === 'ar' ? 'text-left' : 'text-right'} group cursor-help`}
                         >
                             <div className="p-4 bg-white/80 backdrop-blur-md shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] rounded-2xl border border-slate-100 flex items-center justify-center text-slate-900 group-hover:bg-slate-950 group-hover:text-white transition-all duration-500"><ShieldCheck size={24} /></div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-950 transition-colors">Secure Protocol</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-950 transition-colors">{t("secure_protocol")}</p>
                         </motion.div>
                     </div>
                 </motion.div>
@@ -85,19 +87,19 @@ export default function Hero() {
                 <div className="mt-32 w-full max-w-5xl border-t border-slate-100 pt-16 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
                     <div className="space-y-2">
                         <p className="text-3xl font-black text-slate-950">5K+</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">Happy <br /> Merchants</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("happy_merchants")}</p>
                     </div>
                     <div className="space-y-2">
                         <p className="text-3xl font-black text-slate-950">99.9%</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">Uptime <br /> Guaranteed</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("uptime_guaranteed")}</p>
                     </div>
                     <div className="space-y-2">
                         <p className="text-3xl font-black text-slate-950">140+</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">Global <br /> Markets</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("global_markets")}</p>
                     </div>
                     <div className="space-y-2">
                         <p className="text-3xl font-black text-slate-950">24/7</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">Expert <br /> Support</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("expert_support")}</p>
                     </div>
                 </div>
             </div>

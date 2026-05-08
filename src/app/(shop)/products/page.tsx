@@ -4,8 +4,9 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
 import { products, merchants } from "@/lib/data";
-import { Search, SlidersHorizontal, Package, ArrowRight, Zap, Target, Sparkles, Star, ShieldCheck, ChevronRight, Smartphone, Clock, Award, Flame, BarChart3 } from "lucide-react";
-import { useState, useMemo } from "react";
+import * as Icons from "lucide-react";
+import { Search, SlidersHorizontal, Package, ArrowRight, Sparkles, Star, ShieldCheck, ChevronRight, Clock, Award, Flame, BarChart3, Loader2 } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,29 +15,84 @@ import HorizontalScroller from "@/components/product/HorizontalScroller";
 export default function ProductsPage() {
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [searchQuery, setSearchQuery] = useState("");
+    const [settings, setSettings] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [allProducts, setAllProducts] = useState<any[]>([]);
+    const [merchantsList, setMerchantsList] = useState<any[]>([]);
 
-    const categories = [
-        { name: "All", ar: "الكل", icon: Sparkles },
-        { name: "Electronics", ar: "إلكترونيات", icon: Smartphone },
-        { name: "Apparel", ar: "ملابس", icon: ShieldCheck },
-        { name: "Home & Living", ar: "المنزل", icon: Target },
-        { name: "Accessories", ar: "إكسسوارات", icon: Zap }
-    ];
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                // Fetch settings
+                const settingsRes = await fetch("/api/python/public/marketplace/settings");
+                if (settingsRes.ok) {
+                    const data = await settingsRes.json();
+                    setSettings(data);
+                }
 
-    // Filtered products for specific category view
+                // Fetch products
+                const productsRes = await fetch("/api/python/public/products");
+                if (productsRes.ok) {
+                    const data = await productsRes.json();
+                    setAllProducts(data);
+                }
+
+                // Fetch stores
+                const storesRes = await fetch("/api/python/public/stores");
+                if (storesRes.ok) {
+                    const data = await storesRes.json();
+                    setMerchantsList(data);
+                }
+            } catch (err) {
+                console.error("INITIAL_DATA_FETCH_ERROR:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchInitialData();
+    }, []);
+
+    const categories = useMemo(() => {
+        const base = [{ name: "All", ar: "الكل", icon: "Sparkles" }];
+        if (settings?.categories && settings.categories.length > 0) {
+            return [...base, ...settings.categories];
+        }
+        // Fallbacks
+        return [
+            ...base,
+            { name: "Electronics", ar: "إلكترونيات", icon: "Smartphone" },
+            { name: "Apparel", ar: "ملابس", icon: "ShieldCheck" },
+            { name: "Home & Living", ar: "المنزل", icon: "Target" },
+            { name: "Accessories", ar: "إكسسوارات", icon: "Zap" }
+        ];
+    }, [settings]);
+
+    const banners = useMemo(() => {
+        if (settings?.banners && settings.banners.length > 0) {
+            return settings.banners;
+        }
+        return [
+            {
+                title: "Upgrade your Digital Life",
+                subtitle: "New Collection 2026",
+                image_url: null,
+                link: "/products"
+            }
+        ];
+    }, [settings]);
+
     const filteredProducts = useMemo(() => {
-        return products.filter(p => {
+        return allProducts.filter(p => {
             const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
             const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
             return matchesCategory && matchesSearch;
         });
-    }, [selectedCategory, searchQuery]);
+    }, [selectedCategory, searchQuery, allProducts]);
 
-    const trendingProducts = products.filter((_, i) => i < 10);
-    const electronicsProducts = products.filter(p => p.category === "Electronics");
-    const fashionProducts = products.filter(p => p.category === "Apparel");
+    const trendingProducts = allProducts.filter((_, i) => i < 10);
+    const electronicsProducts = allProducts.filter(p => p.category === "Electronics");
+    const fashionProducts = allProducts.filter(p => p.category === "Apparel");
 
-    // Internal components for clean layout
     const CategoryGridCard = ({ title, items, linkText }: { title: string, items: { name: string, image: string, href: string }[], linkText: string }) => (
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col h-full">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter mb-4 italic leading-tight">{title}</h3>
@@ -56,26 +112,54 @@ export default function ProductsPage() {
         </div>
     );
 
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#f1f3f6]">
+                <div className="text-center">
+                    <Loader2 className="animate-spin text-blue-600 mx-auto mb-4" size={40} />
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Initializing Marketplace...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <main className="min-h-screen bg-[#f1f3f6]">
             <Navbar />
 
-            {/* Sub-Navbar / Quick Category Bar (Flipkart Style) */}
-            <div className="pt-16 bg-white border-b border-slate-100 shadow-sm sticky top-0 z-40">
+            {/* Announcement Ticker */}
+            {settings?.announcement_ticker && (
+                <div className="pt-20 bg-slate-950 text-white py-2 overflow-hidden">
+                    <div className="whitespace-nowrap animate-marquee flex items-center gap-10">
+                        {Array(5).fill(0).map((_, i) => (
+                            <span key={i} className="text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-4">
+                                <Sparkles size={10} className="text-blue-400" />
+                                {settings.announcement_ticker}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Sub-Navbar / Quick Category Bar */}
+            <div className={`${!settings?.announcement_ticker ? 'pt-16' : ''} bg-white border-b border-slate-100 shadow-sm sticky top-0 z-40`}>
                 <div className="section-padding py-2 overflow-x-auto no-scrollbar">
                     <div className="flex items-center justify-between gap-6 min-w-max mx-auto max-w-6xl">
-                        {categories.map((cat) => (
-                            <button
-                                key={cat.name}
-                                onClick={() => setSelectedCategory(cat.name)}
-                                className={`flex flex-col items-center gap-1.5 group transition-all ${selectedCategory === cat.name ? "opacity-100" : "opacity-60 hover:opacity-100"}`}
-                            >
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${selectedCategory === cat.name ? "bg-blue-600 text-white shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"}`}>
-                                    <cat.icon size={18} strokeWidth={selectedCategory === cat.name ? 2.5 : 2} />
-                                </div>
-                                <span className={`text-[9px] font-black uppercase tracking-widest ${selectedCategory === cat.name ? "text-blue-600" : "text-slate-500"}`}>{cat.name}</span>
-                            </button>
-                        ))}
+                        {categories.map((cat: any) => {
+                            const Icon = (Icons as any)[cat.icon] || Icons.Package;
+                            return (
+                                <button
+                                    key={cat.name}
+                                    onClick={() => setSelectedCategory(cat.name)}
+                                    className={`flex flex-col items-center gap-1.5 group transition-all ${selectedCategory === cat.name ? "opacity-100" : "opacity-60 hover:opacity-100"}`}
+                                >
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${selectedCategory === cat.name ? "bg-blue-600 text-white shadow-lg" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"}`}>
+                                        <Icon size={18} strokeWidth={selectedCategory === cat.name ? 2.5 : 2} />
+                                    </div>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest ${selectedCategory === cat.name ? "text-blue-600" : "text-slate-500"}`}>{cat.name}</span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -83,7 +167,6 @@ export default function ProductsPage() {
             <div className="section-padding py-8">
                 <AnimatePresence mode="wait">
                     {selectedCategory === "All" && searchQuery === "" ? (
-                        /* DISCOVERY VIEW (Amazon/Flipkart Style) */
                         <motion.div
                             key="home"
                             initial={{ opacity: 0 }}
@@ -91,110 +174,95 @@ export default function ProductsPage() {
                             exit={{ opacity: 0 }}
                             className="space-y-8"
                         >
-                            {/* Hero & Category Cards Hybrid Layout */}
+                            {/* Hero Section */}
                             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                                {/* Main Hero Slider */}
-                                <div className="lg:col-span-3 bg-white rounded-2xl relative overflow-hidden group shadow-xl h-[400px]">
-                                    <div className="absolute inset-0 z-10 p-12 flex flex-col justify-center max-w-lg">
+                                <div className="lg:col-span-4 bg-white rounded-2xl relative overflow-hidden group shadow-xl h-[500px]">
+                                    {banners[0].image_url ? (
+                                        <div className="absolute inset-0">
+                                            <Image 
+                                                src={banners[0].image_url} 
+                                                alt={banners[0].title} 
+                                                fill 
+                                                className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                                            />
+                                            <div className="absolute inset-0 bg-slate-950/40" />
+                                        </div>
+                                    ) : (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-white" />
+                                    )}
+                                    
+                                    <div className="absolute inset-0 z-10 p-12 lg:p-20 flex flex-col justify-center max-w-2xl">
                                         <motion.span
                                             initial={{ opacity: 0, x: -20 }}
                                             animate={{ opacity: 1, x: 0 }}
-                                            className="text-blue-600 text-[10px] font-black uppercase tracking-[0.4em] mb-4 flex items-center gap-2"
+                                            className={`${banners[0].image_url ? 'text-blue-400' : 'text-blue-600'} text-xs font-black uppercase tracking-[0.4em] mb-4 flex items-center gap-2`}
                                         >
-                                            <Sparkles size={12} className="fill-blue-600" /> New Collection 2026
+                                            <Sparkles size={14} className="fill-current" /> {banners[0].subtitle || "New Collection 2026"}
                                         </motion.span>
                                         <motion.h2
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.1 }}
-                                            className="text-5xl font-black text-slate-950 tracking-tighter uppercase leading-[0.9] mb-8 italic"
+                                            className={`text-5xl lg:text-7xl font-black ${banners[0].image_url ? 'text-white' : 'text-slate-950'} tracking-tighter uppercase leading-[0.85] mb-10 italic`}
                                         >
-                                            Upgrade your<br />
-                                            <span className="text-blue-600">Digital Life</span>
+                                            {banners[0].title}
                                         </motion.h2>
                                         <div className="flex gap-4">
-                                            <motion.button
-                                                whileHover={{ scale: 1.05 }}
-                                                className="bg-slate-950 text-white px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl"
+                                            <Link 
+                                                href={banners[0].link || "/products"}
+                                                className="bg-white text-slate-950 px-12 py-5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-2xl hover:bg-blue-600 hover:text-white transition-all active:scale-95"
                                             >
-                                                Shop the Hub
-                                            </motion.button>
-                                            <motion.button
-                                                className="bg-slate-100 text-slate-900 px-10 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
-                                            >
-                                                View Catalog
-                                            </motion.button>
+                                                Explore Collection
+                                            </Link>
                                         </div>
                                     </div>
-                                    {/* Abstract background elements for premium feel */}
-                                    <div className="absolute right-0 top-0 w-1/2 h-full bg-slate-50" />
-                                    <div className="absolute -right-20 bottom-0 w-80 h-80 bg-blue-600/5 rounded-full blur-[100px]" />
-                                    <div className="absolute right-20 top-20 text-slate-100 transform rotate-12 opacity-50">
-                                        <Package size={200} />
-                                    </div>
-                                </div>
-
-                                {/* Quick Shop Card */}
-                                <div className="lg:col-span-1">
-                                    <CategoryGridCard
-                                        title="Pick up where you left off"
-                                        linkText="See your full history"
-                                        items={[
-                                            { name: "Tech", image: products[0].image, href: "/products/1" },
-                                            { name: "Style", image: products[1].image, href: "/products/2" },
-                                            { name: "Living", image: products[2].image, href: "/products/3" },
-                                            { name: "Wear", image: products[3].image, href: "/products/4" }
-                                        ]}
-                                    />
+                                    
+                                    {/* Abstract background elements if no image */}
+                                    {!banners[0].image_url && (
+                                        <>
+                                            <div className="absolute right-0 top-0 w-1/2 h-full bg-slate-50" />
+                                            <div className="absolute -right-20 bottom-0 w-80 h-80 bg-blue-600/5 rounded-full blur-[100px]" />
+                                            <div className="absolute right-20 top-20 text-slate-100 transform rotate-12 opacity-50">
+                                                <Package size={200} />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Multi-Grid Category Row (Amazon Style) */}
+                            {/* Rest of the discovery view remains largely the same but uses dynamic categories if available */}
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <CategoryGridCard
-                                    title="Most-Loved Styles"
-                                    linkText="Explore Fashion"
-                                    items={fashionProducts.slice(0, 4).map(p => ({
-                                        name: p.name,
-                                        image: p.image,
-                                        href: `/products/${p.id}`
-                                    }))}
-                                />
-                                <CategoryGridCard
-                                    title="Gaming & Pro Tech"
-                                    linkText="Upgrade Now"
-                                    items={electronicsProducts.slice(0, 4).map(p => ({
-                                        name: p.name,
-                                        image: p.image,
-                                        href: `/products/${p.id}`
-                                    }))}
-                                />
-                                <div className="bg-[#fb641b] rounded-2xl p-8 flex flex-col justify-between text-white shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform cursor-pointer">
-                                    <div>
-                                        <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-6">
-                                            <Flame size={20} className="fill-white" />
+                                {categories.filter(c => c.name !== "All").slice(0, 4).map((cat, i) => (
+                                    <CategoryGridCard
+                                        key={i}
+                                        title={`${cat.name} Showcase`}
+                                        linkText={`Explore ${cat.name}`}
+                                        items={allProducts.filter(p => p.category === cat.name).slice(0, 4).map(p => ({
+                                            name: p.name,
+                                            image: p.image,
+                                            href: `/products/${p.id}`
+                                        }))}
+                                    />
+                                ))}
+
+                                {categories.length <= 4 && (
+                                    <div className="bg-[#fb641b] rounded-2xl p-8 flex flex-col justify-between text-white shadow-xl relative overflow-hidden group hover:scale-[1.02] transition-transform cursor-pointer">
+                                        <div>
+                                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                                                <Icons.Flame size={20} className="fill-white" />
+                                            </div>
+                                            <h3 className="text-3xl font-black uppercase tracking-tighter leading-none mb-3 italic">Flash<br />Deals</h3>
+                                            <p className="text-[10px] text-white/70 font-black uppercase tracking-[0.2em]">Limited Inventory</p>
                                         </div>
-                                        <h3 className="text-3xl font-black uppercase tracking-tighter leading-none mb-3 italic">Flash<br />Deals</h3>
-                                        <p className="text-[10px] text-white/70 font-black uppercase tracking-[0.2em]">Limited Inventory</p>
+                                        <div className="flex items-end justify-between">
+                                            <div className="text-4xl font-black italic tracking-tighter">70% OFF</div>
+                                            <Icons.ArrowRight className="group-hover:translate-x-2 transition-transform" />
+                                        </div>
+                                        <div className="absolute -right-12 -top-12 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
                                     </div>
-                                    <div className="flex items-end justify-between">
-                                        <div className="text-4xl font-black italic tracking-tighter">70% OFF</div>
-                                        <ArrowRight className="group-hover:translate-x-2 transition-transform" />
-                                    </div>
-                                    <div className="absolute -right-12 -top-12 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-                                </div>
-                                <CategoryGridCard
-                                    title="Home Decor & More"
-                                    linkText="Refresh Home"
-                                    items={products.filter(p => p.category === "Home & Living").slice(0, 4).map(p => ({
-                                        name: p.name,
-                                        image: p.image,
-                                        href: `/products/${p.id}`
-                                    }))}
-                                />
+                                )}
                             </div>
 
-                            {/* Horizontal Product Scroller (Best Sellers) */}
                             <HorizontalScroller
                                 title="Best Sellers of 2026"
                                 subtitle="Top performing items from verified merchants"
@@ -206,7 +274,6 @@ export default function ProductsPage() {
                                 ))}
                             </HorizontalScroller>
 
-                            {/* Row 2: Storefronts Spotlight */}
                             <section className="py-12 overflow-hidden bg-white -mx-6 px-10 rounded-[2rem] sm:rounded-[4rem] relative shadow-2xl border border-slate-100">
                                 <div className="relative z-10">
                                     <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8 text-center md:text-left">
@@ -227,20 +294,24 @@ export default function ProductsPage() {
                                         </div>
                                     </div>
                                     <div className="flex gap-6 overflow-x-auto pb-8 no-scrollbar">
-                                        {merchants.map((m, i) => (
+                                        {(merchantsList.length > 0 ? merchantsList : []).map((m, i) => (
                                             <Link
                                                 key={i}
-                                                href={`/stores/${m.id}`}
+                                                href={`/stores/${m.subdomain || m.id}`}
                                                 className="min-w-[280px] bg-slate-50 border border-slate-100 rounded-[2.5rem] p-8 group hover:bg-white hover:shadow-xl transition-all cursor-pointer block"
                                             >
-                                                <div className="w-16 h-16 bg-white rounded-[1.5rem] mb-6 flex items-center justify-center shadow-sm">
-                                                    <Package className="text-blue-600" size={32} />
+                                                <div className="w-16 h-16 bg-white rounded-[1.5rem] mb-6 flex items-center justify-center shadow-sm overflow-hidden">
+                                                    {m.logo_url ? (
+                                                        <img src={m.logo_url} className="w-full h-full object-cover" alt="" />
+                                                    ) : (
+                                                        <Package className="text-blue-600" size={32} />
+                                                    )}
                                                 </div>
-                                                <h4 className="text-lg font-black text-slate-950 uppercase tracking-tight mb-2 group-hover:text-blue-600">{m.name}</h4>
+                                                <h4 className="text-lg font-black text-slate-950 uppercase tracking-tight mb-2 group-hover:text-blue-600 line-clamp-1">{m.store_name}</h4>
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <Star size={10} className="fill-amber-400 text-amber-400" />
-                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Top Rated Store</span>
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{m.category || "Verified Merchant"}</span>
                                                     </div>
                                                     <ChevronRight size={14} className="text-slate-400 group-hover:text-blue-600 transition-all group-hover:translate-x-1" />
                                                 </div>
@@ -251,7 +322,6 @@ export default function ProductsPage() {
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
                             </section>
 
-                            {/* Hot Deals Scroller */}
                             <HorizontalScroller
                                 title="Deals on Gadgets"
                                 subtitle="Upgrade your setup with these price cuts"
@@ -264,7 +334,6 @@ export default function ProductsPage() {
                             </HorizontalScroller>
                         </motion.div>
                     ) : (
-                        /* GRID SEARCH VIEW */
                         <motion.div
                             key="grid"
                             initial={{ opacity: 0, y: 20 }}
@@ -324,29 +393,48 @@ export default function ProductsPage() {
                 </AnimatePresence>
             </div>
 
-            {/* Banner Pairs (Marketplace Experience) */}
             <section className="section-padding py-0 mb-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-white">
-                    <div className="bg-[#fb641b] rounded-3xl p-10 relative overflow-hidden group cursor-pointer shadow-xl">
-                        <div className="relative z-10">
-                            <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full mb-6 inline-block">Flash Deals</span>
-                            <h3 className="text-4xl font-black uppercase tracking-tighter italic mb-4 leading-none">Summer Fashion<br />Stock Clearance</h3>
-                            <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white pb-1 group-hover:gap-4 transition-all">Shop Now <ArrowRight size={14} /></button>
+                    {(settings?.promotions || []).map((promo: any, i: number) => (
+                        <div 
+                            key={i} 
+                            style={{ backgroundColor: promo.color || '#fb641b' }}
+                            className="rounded-3xl p-10 relative overflow-hidden group cursor-pointer shadow-xl transition-transform hover:scale-[1.02]"
+                        >
+                            <div className="relative z-10">
+                                <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full mb-6 inline-block">Special Offer</span>
+                                <h3 className="text-4xl font-black uppercase tracking-tighter italic mb-4 leading-none">{promo.title}</h3>
+                                <p className="text-2xl font-black italic mb-6">{promo.subtitle}</p>
+                                <Link href={promo.link || "/products"} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white pb-1 group-hover:gap-4 transition-all w-fit">
+                                    Shop Now <Icons.ArrowRight size={14} />
+                                </Link>
+                            </div>
+                            <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
                         </div>
-                        <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
-                    </div>
-                    <div className="bg-[#2874f0] rounded-3xl p-10 relative overflow-hidden group cursor-pointer shadow-xl">
-                        <div className="relative z-10">
-                            <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full mb-6 inline-block">Daily Pick</span>
-                            <h3 className="text-4xl font-black uppercase tracking-tighter italic mb-4 leading-none">Smart Home<br />Essentials 2026</h3>
-                            <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white pb-1 group-hover:gap-4 transition-all">Explore <ArrowRight size={14} /></button>
-                        </div>
-                        <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
-                    </div>
+                    ))}
+                    {(settings?.promotions || []).length === 0 && (
+                        <>
+                            <div className="bg-[#fb641b] rounded-3xl p-10 relative overflow-hidden group cursor-pointer shadow-xl">
+                                <div className="relative z-10">
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full mb-6 inline-block">Flash Deals</span>
+                                    <h3 className="text-4xl font-black uppercase tracking-tighter italic mb-4 leading-none">Summer Fashion<br />Stock Clearance</h3>
+                                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white pb-1 group-hover:gap-4 transition-all">Shop Now <Icons.ArrowRight size={14} /></button>
+                                </div>
+                                <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
+                            </div>
+                            <div className="bg-[#2874f0] rounded-3xl p-10 relative overflow-hidden group cursor-pointer shadow-xl">
+                                <div className="relative z-10">
+                                    <span className="text-[10px] font-black uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full mb-6 inline-block">Daily Pick</span>
+                                    <h3 className="text-4xl font-black uppercase tracking-tighter italic mb-4 leading-none">Smart Home<br />Essentials 2026</h3>
+                                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white pb-1 group-hover:gap-4 transition-all">Explore <Icons.ArrowRight size={14} /></button>
+                                </div>
+                                <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
+                            </div>
+                        </>
+                    )}
                 </div>
             </section>
 
-            {/* Quality Commitment Section */}
             <section className="py-24 bg-white border-t border-slate-100">
                 <div className="section-padding py-0">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12">

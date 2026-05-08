@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { MerchantProvider } from "@/context/MerchantContext";
+import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,9 +22,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${inter.className} min-h-screen bg-white text-slate-900 antialiased`}>
-        <MerchantProvider>
-          {children}
-        </MerchantProvider>
+        <LanguageProvider>
+          <MerchantProvider>
+            <CartProvider>
+              <WishlistProvider>
+                {children}
+              </WishlistProvider>
+            </CartProvider>
+          </MerchantProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

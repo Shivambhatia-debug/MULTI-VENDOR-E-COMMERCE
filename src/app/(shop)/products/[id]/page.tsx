@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { products } from "@/lib/data";
+import { useParams, useRouter } from "next/navigation";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/product/ProductCard";
@@ -21,26 +22,62 @@ import {
     CheckCircle2,
     MessageSquare,
     ThumbsUp,
-    ChevronLeft
+    ChevronLeft,
+    Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function ProductDetailPage() {
     const params = useParams();
+    const router = useRouter();
     const id = params.id as string;
+    
+    const { addToCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
+    const isWishlisted = isInWishlist(id);
 
-    const product = products.find(p => p.id === id);
-    const [isWishlisted, setIsWishlisted] = useState(false);
+    const [product, setProduct] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedSize, setSelectedSize] = useState("M");
-    const [selectedImage, setSelectedImage] = useState<string | null>(product?.image || null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
-    const similarProducts = useMemo(() => {
-        if (!product) return [];
-        return products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
-    }, [product]);
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                // Fetch product details
+                const res = await fetch(`/api/python/public/products/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProduct(data);
+                    setSelectedImage(data.image);
+                    
+                    // Fetch similar products (placeholder for now, can be improved)
+                    const allRes = await fetch("/api/python/public/products");
+                    if (allRes.ok) {
+                        const allData = await allRes.json();
+                        setSimilarProducts(allData.filter((p: any) => p.category === data.category && p.id !== id).slice(0, 4));
+                    }
+                }
+            } catch (err) {
+                console.error("PRODUCT_FETCH_ERROR:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        if (id) fetchProduct();
+    }, [id]);
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <Loader2 className="animate-spin text-blue-600" size={40} />
+            </div>
+        );
+    }
 
     if (!product) {
         return (
@@ -59,7 +96,7 @@ export default function ProductDetailPage() {
         <main className="min-h-screen bg-white">
             <Navbar />
 
-            <div className="pt-16 pb-12 section-padding">
+            <div className="pt-16 pb-32 sm:pb-12 section-padding">
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 mb-6 overflow-x-auto no-scrollbar">
                     <Link href="/products" className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors">Marketplace</Link>
@@ -78,8 +115,8 @@ export default function ProductDetailPage() {
                     >
                         <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 group">
                             <Image
-                                src={selectedImage || product.image}
-                                alt={product.name}
+                                src={(selectedImage || product.image) || "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=800"}
+                                alt={product.name || "Product Image"}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                             />
@@ -89,7 +126,7 @@ export default function ProductDetailPage() {
                                 </div>
                             )}
                             <button
-                                onClick={() => setIsWishlisted(!isWishlisted)}
+                                onClick={() => toggleWishlist(product)}
                                 className={`absolute top-6 right-6 w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border transition-all shadow-xl z-10 ${isWishlisted ? "bg-red-50 border-red-100 text-red-500" : "bg-white/80 border-white/20 text-slate-400 hover:text-slate-900"}`}
                             >
                                 <Heart size={18} className={isWishlisted ? "fill-red-500" : ""} />
@@ -97,13 +134,13 @@ export default function ProductDetailPage() {
                         </div>
 
                         <div className="grid grid-cols-5 gap-3">
-                            {((product as any).images && (product as any).images.length > 0 ? (product as any).images : [product.image]).slice(0, 5).map((img: string, i: number) => (
+                            {(product.images && product.images.length > 0 ? product.images : [product.image]).slice(0, 5).map((img: string, i: number) => (
                                 <div 
                                     key={i} 
                                     onClick={() => setSelectedImage(img)}
                                     className={`aspect-square rounded-xl bg-slate-50 border-2 transition-all cursor-pointer overflow-hidden ${selectedImage === img || (!selectedImage && i === 0) ? "border-blue-600 shadow-lg scale-95" : "border-transparent opacity-50 hover:opacity-100"}`}
                                 >
-                                    <img src={img} alt={`${product.name} ${i}`} className="object-cover w-full h-full" />
+                                    <img src={img || "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=100"} alt={`${product.name} ${i}`} className="object-cover w-full h-full" />
                                 </div>
                             ))}
                         </div>
@@ -167,19 +204,22 @@ export default function ProductDetailPage() {
                             )}
 
                             {/* CTAs */}
-                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                <Link
-                                    href="/cart"
-                                    className="flex-[2] bg-slate-950 text-white py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.4em] shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl p-4 border-t border-slate-100 flex gap-3 z-40 sm:relative sm:bg-transparent sm:p-0 sm:border-none sm:pt-2">
+                                <button
+                                    onClick={() => addToCart(product, 1)}
+                                    className="flex-[2] bg-slate-950 text-white py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.4em] shadow-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 active:scale-95"
                                 >
                                     <ShoppingCart size={14} /> Add to Cart
-                                </Link>
-                                <Link
-                                    href="/checkout"
-                                    className="flex-1 bg-blue-600 text-white py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.4em] shadow-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        addToCart(product, 1);
+                                        router.push("/checkout");
+                                    }}
+                                    className="flex-1 bg-blue-600 text-white py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.4em] shadow-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-95"
                                 >
                                     <Zap size={14} className="fill-white" /> Buy Now
-                                </Link>
+                                </button>
                             </div>
 
                             {/* Trust Elements */}

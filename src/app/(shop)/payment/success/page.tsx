@@ -18,9 +18,13 @@ import { useEffect, useState } from "react";
 
 export default function PaymentSuccessPage() {
     const [orderId, setOrderId] = useState("");
+    const [arrivalDate, setArrivalDate] = useState("");
 
     useEffect(() => {
         setOrderId("GL-" + Math.random().toString(36).substring(2, 9).toUpperCase());
+        const date = new Date();
+        date.setDate(date.getDate() + 3); // 3 days from now
+        setArrivalDate(date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }));
     }, []);
 
     return (
@@ -74,16 +78,32 @@ export default function PaymentSuccessPage() {
                                 </div>
                                 <div>
                                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expected Arrival</h4>
-                                    <p className="text-sm font-black text-slate-950">Tomorrow, by 6:00 PM</p>
+                                    <p className="text-sm font-black text-slate-950">{arrivalDate}, by 6:00 PM</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="pt-10 space-y-4">
-                            <button className="w-full bg-white border border-slate-200 text-slate-950 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+                            <button 
+                                onClick={() => window.print()}
+                                className="w-full bg-white border border-slate-200 text-slate-950 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-3"
+                            >
                                 <Download size={16} /> Download Receipt
                             </button>
-                            <button className="w-full bg-slate-950 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3">
+                            <button 
+                                onClick={() => {
+                                    if (navigator.share) {
+                                        navigator.share({
+                                            title: 'GOLALITA Purchase',
+                                            text: `I just secured an order ${orderId} on GOLALITA!`,
+                                            url: window.location.origin
+                                        });
+                                    } else {
+                                        alert("Share protocol not supported on this device");
+                                    }
+                                }}
+                                className="w-full bg-slate-950 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-3"
+                            >
                                 <Share2 size={16} /> Share Purchase
                             </button>
                         </div>
@@ -111,13 +131,13 @@ export default function PaymentSuccessPage() {
 
                         <div className="relative z-10 space-y-4">
                             <Link
-                                href="/dashboard/orders"
+                                href="/orders"
                                 className="w-full bg-white text-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] shadow-xl hover:bg-blue-50 transition-all flex items-center justify-center gap-3 group"
                             >
                                 <Truck size={18} /> Track Delivery <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
                             <Link
-                                href="/products"
+                                href="/marketplace"
                                 className="w-full bg-blue-700 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-800 transition-all flex items-center justify-center gap-3"
                             >
                                 <ShoppingBag size={16} /> Continue Shopping

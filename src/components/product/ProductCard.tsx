@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Star, ShoppingCart, Truck, ShieldCheck, Zap } from "lucide-react";
+import { Star, ShoppingCart, Truck, ShieldCheck, Zap, Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface ProductCardProps {
     product: {
@@ -20,6 +22,10 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+    const { addToCart } = useCart();
+    const { toggleWishlist, isInWishlist } = useWishlist();
+    const isFavorite = isInWishlist(product.id.toString());
+
     const discount = product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
 
     return (
@@ -43,13 +49,34 @@ const ProductCard = ({ product }: ProductCardProps) => {
                             {discount}% OFF
                         </div>
                     )}
+
+                    {/* Wishlist Button */}
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist(product);
+                        }}
+                        className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all z-10 ${
+                            isFavorite ? "bg-rose-500 text-white shadow-rose-200" : "bg-white text-slate-400 hover:text-rose-500"
+                        } shadow-lg`}
+                    >
+                        <Heart size={14} className={isFavorite ? "fill-white" : ""} />
+                    </button>
                 </Link>
 
                 {/* Quick Add Overlay */}
                 <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-4 z-20 pointer-events-none group-hover:pointer-events-auto">
-                    <Link href="/cart" className="flex-1 bg-white text-slate-950 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2 pointer-events-auto">
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart(product, 1);
+                        }}
+                        className="flex-1 bg-white text-slate-950 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2 pointer-events-auto"
+                    >
                         <ShoppingCart size={14} /> Add
-                    </Link>
+                    </button>
                     <Link href="/checkout" className="w-12 h-12 bg-white text-slate-950 rounded-xl flex items-center justify-center shadow-xl hover:bg-slate-50 transition-all text-blue-600 pointer-events-auto">
                         <Zap size={16} className="fill-blue-600" />
                     </Link>

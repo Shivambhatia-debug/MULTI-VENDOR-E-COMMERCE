@@ -64,3 +64,43 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ─── RTL Layout Fixes ─── */
+
+/* Keep buttons and cards centered regardless of direction */
+html[dir="rtl"] .text-center {
+  text-align: center;
+}
+
+/* Fix sidebar position for RTL - keep it on the right */
+html[dir="rtl"] aside.fixed {
+  left: auto;
+  right: 0;
+}
+html[dir="rtl"] aside.fixed ~ div.w-64 {
+  margin-left: 0;
+}
+
+/* Fix the mobile sidebar toggle position */
+html[dir="rtl"] button.fixed {
+  left: auto;
+  right: 1rem;
+}
+
+/* RTL sidebar translate fix */
+html[dir="rtl"] aside.-translate-x-full {
+  transform: translateX(100%);
+}
+html[dir="rtl"] aside.translate-x-0 {
+  transform: translateX(0);
+}
+
+/* Ensure tables always stay LTR for readability */
+html[dir="rtl"] table {
+  direction: ltr;
+}
+
+/* Footer RTL */
+html[dir="rtl"] footer {
+  direction: rtl;
+}
