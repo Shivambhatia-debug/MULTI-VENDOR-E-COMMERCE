@@ -217,11 +217,11 @@ export default function Pricing() {
                     <div className="flex gap-10">
                         <div>
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t("store_builder_label")}</p>
-                            <p className="text-xs font-black text-slate-800">mnasati.com</p>
+                            <p className="text-xs font-black text-slate-800">golalita.com</p>
                         </div>
                         <div>
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{t("email_support")}</p>
-                            <p className="text-xs font-black text-slate-800">info@mnasati.com</p>
+                            <p className="text-xs font-black text-slate-800">support@golalita.com</p>
                         </div>
                     </div>
                     <div className={`${isAr ? 'text-left' : 'text-right'}`}>

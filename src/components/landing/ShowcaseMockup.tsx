@@ -86,7 +86,7 @@ export default function ShowcaseMockup() {
             </div>
 
             {/* Floating Layout Tags */}
-            <div className="absolute -right-20 top-1/4 flex flex-col gap-3">
+            <div className="hidden lg:flex absolute -right-20 top-1/4 flex-col gap-3">
                 {PRESETS.map((p, i) => (
                     <div
                         key={p.name}

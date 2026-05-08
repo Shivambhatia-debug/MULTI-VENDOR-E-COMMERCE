@@ -25,7 +25,7 @@ export default function AppSection() {
                         <span>{t("merchant_mobile_app")}</span>
                     </div>
 
-                    <h2 className="text-4xl lg:text-7xl font-black mb-10 leading-[0.9] tracking-tighter uppercase">
+                    <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black mb-10 leading-[0.9] tracking-tighter uppercase">
                         {t("run_your")} <br />
                         <span className="text-slate-400">{t("business_anywhere")}</span>
                     </h2>

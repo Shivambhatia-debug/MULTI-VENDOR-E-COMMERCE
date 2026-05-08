@@ -30,7 +30,7 @@ export default function Hero() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1, ease: "anticipate" }}
-                    className="text-6xl lg:text-[8rem] font-black text-slate-950 leading-[0.85] mb-12 tracking-tighter max-w-7xl uppercase"
+                    className="text-3xl sm:text-4xl md:text-6xl lg:text-[8rem] font-black text-slate-950 leading-[0.85] mb-12 tracking-tighter max-w-7xl uppercase"
                 >
                     {t("new_standard_for")} <br />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-slate-900">{t("modern_selling")}</span>
@@ -40,16 +40,16 @@ export default function Hero() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5, duration: 1 }}
-                    className="text-base lg:text-xl text-slate-500 mb-16 leading-relaxed font-medium max-w-3xl"
+                    className="text-sm sm:text-base lg:text-xl text-slate-500 mb-16 leading-relaxed font-medium max-w-3xl px-4"
                 >
                     {t("hero_subtitle_2")}
                 </motion.p>
 
-                <div className="flex flex-col sm:flex-row gap-6 mb-24">
-                    <Link href="/products" className="btn-primary px-12 py-5 text-[11px] shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
+                <div className="flex flex-col sm:flex-row gap-6 mb-24 px-6 w-full sm:w-auto">
+                    <Link href="/products" className="btn-primary px-12 py-5 text-[11px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] w-full sm:w-auto text-center">
                         {t("browse_marketplace")}
                     </Link>
-                    <Link href="/get-started" className="btn-secondary px-12 py-5 text-[11px]">
+                    <Link href="/get-started" className="btn-secondary px-12 py-5 text-[11px] w-full sm:w-auto text-center">
                         {t("create_your_store")}
                     </Link>
                 </div>
@@ -84,21 +84,21 @@ export default function Hero() {
                 </motion.div>
 
                 {/* Proof Line */}
-                <div className="mt-32 w-full max-w-5xl border-t border-slate-100 pt-16 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+                <div className="mt-32 w-full max-w-5xl border-t border-slate-100 pt-16 grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12 text-center">
                     <div className="space-y-2">
-                        <p className="text-3xl font-black text-slate-950">5K+</p>
+                        <p className="text-2xl sm:text-3xl font-black text-slate-950">5K+</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("happy_merchants")}</p>
                     </div>
                     <div className="space-y-2">
-                        <p className="text-3xl font-black text-slate-950">99.9%</p>
+                        <p className="text-2xl sm:text-3xl font-black text-slate-950">99.9%</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("uptime_guaranteed")}</p>
                     </div>
                     <div className="space-y-2">
-                        <p className="text-3xl font-black text-slate-950">140+</p>
+                        <p className="text-2xl sm:text-3xl font-black text-slate-950">140+</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("global_markets")}</p>
                     </div>
                     <div className="space-y-2">
-                        <p className="text-3xl font-black text-slate-950">24/7</p>
+                        <p className="text-2xl sm:text-3xl font-black text-slate-950">24/7</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-loose">{t("expert_support")}</p>
                     </div>
                 </div>

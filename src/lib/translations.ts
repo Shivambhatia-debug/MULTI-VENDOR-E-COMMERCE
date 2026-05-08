@@ -120,7 +120,7 @@ export const dict: Translations = {
 
     // ─── Pricing ───
     packages_pricing: { en: "Packages Pricing", ar: "أسعار الباقات" },
-    ecommerce_services: { en: "E-Commerce Store & MNASATI Services", ar: "خدمات المتاجر الإلكترونية ومنصتي" },
+    ecommerce_services: { en: "E-Commerce Store & Golalita Services", ar: "خدمات المتاجر الإلكترونية وجولاليتا" },
     features_breakdown: { en: "Features Breakdown", ar: "تفاصيل المميزات" },
     per_year: { en: "/ Year", ar: "/ سنوياً" },
     current_plan: { en: "Current Plan", ar: "الباقة الحالية" },
@@ -129,7 +129,7 @@ export const dict: Translations = {
     choose_your_plan: { en: "Choose your plan.", ar: "اختر باقتك." },
     store_builder_label: { en: "Store Builder", ar: "منشئ المتاجر" },
     email_support: { en: "Email Support", ar: "الدعم عبر البريد" },
-    all_rights_reserved_mn: { en: "All Rights Reserved © Mnasati 2024", ar: "جميع الحقوق محفوظة © منصتي 2024" },
+    all_rights_reserved_mn: { en: "All Rights Reserved © Golalita 2024", ar: "جميع الحقوق محفوظة © جولاليتا 2024" },
     pro_saas_ecosystem: { en: "Professional SaaS Ecosystem for GCC", ar: "منظومة SaaS احترافية لدول الخليج" },
 
     // ─── Footer ───

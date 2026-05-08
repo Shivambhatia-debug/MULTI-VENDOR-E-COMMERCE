@@ -76,7 +76,7 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
                     <div className="w-9 h-9 bg-slate-950 rounded-lg flex items-center justify-center shadow-lg shadow-slate-900/10 group-hover:scale-105 transition-all duration-300 border border-white/10">
                         <span className="text-white font-black text-lg leading-none">G</span>
                     </div>
-                    <span className={`text-xl font-black tracking-tighter flex items-center gap-1 uppercase transition-colors ${isLight ? "text-slate-950" : "text-white"}`}>
+                    <span className={`text-lg sm:text-xl font-black tracking-tighter flex items-center gap-1 uppercase transition-colors ${isLight ? "text-slate-950" : "text-white"}`}>
                         Golalita
                         <span className="text-[9px] bg-white text-slate-950 px-1.5 py-0.5 rounded font-black border border-slate-200">OS</span>
                     </span>

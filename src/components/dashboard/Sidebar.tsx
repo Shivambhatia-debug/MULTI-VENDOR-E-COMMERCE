@@ -30,7 +30,7 @@ import { useLanguage } from "@/context/LanguageContext";
 const Sidebar = () => {
     const { activePlan, logout, user } = useMerchant();
     const { t, language } = useLanguage();
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const isRtl = language === 'ar';
 

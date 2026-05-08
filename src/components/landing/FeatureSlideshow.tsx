@@ -84,15 +84,15 @@ export default function FeatureSlideshow() {
                         transition={{ delay: 0.3, duration: 0.8 }}
                     >
                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-6 block">{t("feature_spotlight")}</span>
-                        <h2 className="text-6xl lg:text-[7rem] font-black text-white leading-[0.8] tracking-tighter mb-8 uppercase">
+                        <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-[7rem] font-black text-white leading-[0.8] tracking-tighter mb-8 uppercase">
                             {slides[current].title}
                         </h2>
                         <p className="text-xl text-slate-400 font-medium max-w-2xl mb-12 leading-relaxed">
                             {slides[current].desc}
                         </p>
 
-                        <div className={`flex items-center gap-8 ${language === 'ar' ? 'flex-row-reverse' : ''}`}>
-                            <button className="bg-white text-black px-12 py-5 rounded-full text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-100 transition-all shadow-2xl">
+                        <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 ${language === 'ar' ? 'sm:flex-row-reverse' : ''}`}>
+                            <button className="bg-white text-black px-12 py-5 rounded-full text-[11px] font-black uppercase tracking-widest flex items-center gap-3 hover:bg-slate-100 transition-all shadow-2xl w-full sm:w-auto justify-center">
                                 {t("explore_detail")} <ArrowRight size={18} className={language === 'ar' ? 'rotate-180' : ''} />
                             </button>
                             <div className="flex items-center gap-4">
