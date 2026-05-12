@@ -59,7 +59,7 @@ export default function GetStartedPage() {
                     email: email,
                     password: password,
                     role: role,
-                    plan: "Basic"
+                    plan: "None"
                 },
                 otp: otp,
                 business_name: role === "merchant" ? businessName : undefined

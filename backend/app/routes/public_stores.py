@@ -27,6 +27,7 @@ async def list_published_stores():
             "merchant_id": merchant_id,
             "store_name": config.get("store_name", "Store"),
             "subdomain": config.get("subdomain", ""),
+            "custom_domain": config.get("custom_domain"),
             "primary_color": config.get("primary_color", "#2563eb"),
             "logo_url": config.get("logo_url", ""),
             "hero_image": config.get("hero_image", ""),
@@ -51,13 +52,19 @@ async def list_published_stores():
     return stores
 
 
-@router.get("/stores/by-subdomain/{subdomain}")
-@router.get("/stores/by-subdomain/{subdomain}/")
-async def get_store_by_subdomain(subdomain: str):
-    """Resolve a store by its subdomain slug (e.g., 'lux-apparel')"""
+@router.get("/stores/by-domain/{domain}")
+@router.get("/stores/by-domain/{domain}/")
+async def get_store_by_domain(domain: str):
+    """Resolve a store by its custom domain or subdomain."""
     db = await get_database()
-
-    config = await db.store_configs.find_one({"subdomain": subdomain, "is_published": True, "is_approved": True})
+    
+    # Try custom domain first, then subdomain
+    config = await db.store_configs.find_one({
+        "$or": [{"custom_domain": domain}, {"subdomain": domain}],
+        "is_published": True, 
+        "is_approved": True
+    })
+    
     if not config:
         return {"error": "Store not found or not published"}
 
@@ -69,8 +76,12 @@ async def get_store_by_subdomain(subdomain: str):
 async def get_public_store(store_id: str):
     db = await get_database()
 
-    # Try subdomain resolve
-    config = await db.store_configs.find_one({"subdomain": store_id, "is_published": True, "is_approved": True})
+    # Try subdomain or custom domain resolve
+    config = await db.store_configs.find_one({
+        "$or": [{"subdomain": store_id}, {"custom_domain": store_id}], 
+        "is_published": True, 
+        "is_approved": True
+    })
     
     if not config:
         # Try ID resolve

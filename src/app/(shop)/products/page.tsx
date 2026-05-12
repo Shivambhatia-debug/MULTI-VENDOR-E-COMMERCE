@@ -308,7 +308,7 @@ export default function ProductsPage() {
                                         {(merchantsList.length > 0 ? merchantsList : []).map((m, i) => (
                                             <Link
                                                 key={i}
-                                                href={`/stores/${m.subdomain || m.id}`}
+                                                href={`/${m.custom_domain || m.subdomain || m.id}`}
                                                 className="min-w-[280px] bg-slate-50 border border-slate-100 rounded-[2.5rem] p-8 group hover:bg-white hover:shadow-xl transition-all cursor-pointer block"
                                             >
                                                 <div className="w-16 h-16 bg-white rounded-[1.5rem] mb-6 flex items-center justify-center shadow-sm overflow-hidden">

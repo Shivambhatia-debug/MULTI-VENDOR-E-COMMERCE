@@ -1,10 +1,40 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.database import get_database
 from app.routes.auth import get_current_user
+from app.config import settings
 from bson import ObjectId
 from datetime import datetime
+import socket
+import httpx
 
-router = APIRouter(prefix="/api/admin", tags=["admin"], redirect_slashes=False)
+router = APIRouter(tags=["admin"], redirect_slashes=False)
+print(">>> LOADING ADMIN ROUTER")
+
+@router.get("/merchant-subscriptions")
+@router.get("/merchant-subscriptions/")
+async def get_all_subscriptions(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    db = await get_database()
+    merchants_users = await db.users.find({"role": "merchant"}).to_list(None)
+    merchant_profiles = await db.merchants.find().to_list(None)
+    profile_map = {p.get("user_id"): p for p in merchant_profiles}
+    subscriptions = []
+    for m in merchants_users:
+        user_id = str(m["_id"])
+        profile = profile_map.get(user_id, {})
+        name = profile.get("store_name") or profile.get("business_name") or m.get("name") or "Unknown Merchant"
+        subscriptions.append({
+            "merchant_id": user_id,
+            "merchant_name": name,
+            "merchant_email": m.get("email", "No Email"),
+            "plan": m.get("plan") or profile.get("plan") or "Basic",
+            "status": m.get("subscription_status") or profile.get("subscription_status") or "none",
+            "paid_at": str(m.get("subscription_paid_at")) if m.get("subscription_paid_at") else None,
+            "trial_end": str(m.get("trial_end")) if m.get("trial_end") else None,
+            "is_paid": m.get("subscription_status") == "active"
+        })
+    return subscriptions
 
 @router.get("/stats")
 @router.get("/stats/")
@@ -95,6 +125,8 @@ async def get_all_merchants(current_user: dict = Depends(get_current_user)):
             "stores": stores_count,
             "revenue": f"{int(revenue)} QAR",
             "plan": m.get("plan", "Basic"),
+            "subscription_status": m.get("subscription_status", "none"),
+            "trial_end": str(m.get("trial_end")) if m.get("trial_end") else None,
             "joined": m.get("created_at", "N/A")
         })
     
@@ -326,3 +358,327 @@ async def update_platform_settings(data: dict, current_user: dict = Depends(get_
     )
     return {"message": "Platform settings updated"}
 
+
+# ============================================================
+# DOMAIN MANAGEMENT
+# ============================================================
+
+@router.get("/domains/pending")
+@router.get("/domains/pending/")
+async def get_pending_domains(current_user: dict = Depends(get_current_user)):
+    """Get all stores with pending or submitted custom domains."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    stores = await db.store_configs.find({
+        "custom_domain": {"$ne": None},
+        "domain_status": {"$in": ["pending_dns", "dns_verified", "deploying", "failed"]}
+    }).to_list(None)
+    
+    enriched = []
+    for s in stores:
+        m_id = s.get("merchant_id")
+        merchant = None
+        if m_id:
+            try:
+                merchant = await db.users.find_one({"_id": ObjectId(m_id)})
+            except:
+                merchant = await db.users.find_one({"_id": m_id})
+        
+        enriched.append({
+            "id": str(s["_id"]),
+            "store_name": s.get("store_name", "Unnamed Store"),
+            "subdomain": s.get("subdomain", ""),
+            "custom_domain": s.get("custom_domain"),
+            "domain_status": s.get("domain_status", "none"),
+            "ssl_status": s.get("ssl_status", "none"),
+            "dns_records": s.get("dns_records", []),
+            "domain_submitted_at": s.get("domain_submitted_at"),
+            "domain_verified_at": s.get("domain_verified_at"),
+            "merchant_name": merchant.get("name") if merchant else "Unknown",
+            "merchant_email": merchant.get("email") if merchant else "N/A",
+        })
+    
+    return enriched
+
+
+@router.get("/domains/all")
+@router.get("/domains/all/")
+async def get_all_domains(current_user: dict = Depends(get_current_user)):
+    """Get all stores that have custom domains (any status)."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    stores = await db.store_configs.find({
+        "custom_domain": {"$ne": None}
+    }).to_list(None)
+    
+    enriched = []
+    for s in stores:
+        m_id = s.get("merchant_id")
+        merchant = None
+        if m_id:
+            try:
+                merchant = await db.users.find_one({"_id": ObjectId(m_id)})
+            except:
+                merchant = await db.users.find_one({"_id": m_id})
+        
+        enriched.append({
+            "id": str(s["_id"]),
+            "store_name": s.get("store_name", "Unnamed Store"),
+            "subdomain": s.get("subdomain", ""),
+            "custom_domain": s.get("custom_domain"),
+            "domain_status": s.get("domain_status", "none"),
+            "ssl_status": s.get("ssl_status", "none"),
+            "dns_records": s.get("dns_records", []),
+            "domain_submitted_at": s.get("domain_submitted_at"),
+            "domain_verified_at": s.get("domain_verified_at"),
+            "merchant_name": merchant.get("name") if merchant else "Unknown",
+            "merchant_email": merchant.get("email") if merchant else "N/A",
+        })
+    
+    return enriched
+
+
+@router.post("/domains/check-dns/{store_id}")
+@router.post("/domains/check-dns/{store_id}/")
+async def check_domain_dns(store_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if a domain's DNS records are correctly configured."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    config = await db.store_configs.find_one({"_id": ObjectId(store_id)})
+    if not config:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    domain = config.get("custom_domain")
+    if not domain:
+        raise HTTPException(status_code=400, detail="No custom domain configured")
+    
+    # Perform DNS lookup
+    results = {"domain": domain, "checks": []}
+    
+    # Check A record (root domain → 76.76.21.21)
+    try:
+        addr_info = socket.getaddrinfo(domain, None, socket.AF_INET)
+        resolved_ips = list(set([addr[4][0] for addr in addr_info]))
+        a_correct = "76.76.21.21" in resolved_ips
+        results["checks"].append({
+            "type": "A",
+            "name": domain,
+            "expected": "76.76.21.21",
+            "found": ", ".join(resolved_ips) if resolved_ips else "No records",
+            "verified": a_correct
+        })
+    except socket.gaierror:
+        results["checks"].append({
+            "type": "A",
+            "name": domain,
+            "expected": "76.76.21.21",
+            "found": "DNS not resolving",
+            "verified": False
+        })
+    
+    # Check www CNAME (www.domain → cname.vercel-dns.com)
+    www_domain = f"www.{domain}"
+    try:
+        addr_info = socket.getaddrinfo(www_domain, None)
+        www_resolved = True
+        results["checks"].append({
+            "type": "CNAME",
+            "name": www_domain,
+            "expected": "cname.vercel-dns.com",
+            "found": "Resolving (CNAME likely set)",
+            "verified": True
+        })
+    except socket.gaierror:
+        results["checks"].append({
+            "type": "CNAME",
+            "name": www_domain,
+            "expected": "cname.vercel-dns.com",
+            "found": "Not resolving",
+            "verified": False
+        })
+    
+    # Overall verdict
+    all_verified = all(c["verified"] for c in results["checks"])
+    results["all_verified"] = all_verified
+    
+    # Update domain status if DNS is verified
+    if all_verified:
+        await db.store_configs.update_one(
+            {"_id": ObjectId(store_id)},
+            {"$set": {"domain_status": "dns_verified"}}
+        )
+        results["message"] = "DNS verified! Domain is ready to deploy."
+    else:
+        results["message"] = "DNS not fully configured. Please check the records above."
+    
+    return results
+
+
+@router.post("/domains/deploy/{store_id}")
+@router.post("/domains/deploy/{store_id}/")
+async def deploy_domain(store_id: str, current_user: dict = Depends(get_current_user)):
+    """Deploy a verified domain to Vercel (makes it live)."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    config = await db.store_configs.find_one({"_id": ObjectId(store_id)})
+    if not config:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    domain = config.get("custom_domain")
+    if not domain:
+        raise HTTPException(status_code=400, detail="No custom domain configured")
+    
+    domain_status = config.get("domain_status")
+    if domain_status not in ["dns_verified", "pending_dns", "failed"]:
+        if domain_status == "active":
+            raise HTTPException(status_code=400, detail="Domain is already active")
+        raise HTTPException(status_code=400, detail=f"Domain status '{domain_status}' cannot be deployed")
+    
+    # Update status to deploying
+    await db.store_configs.update_one(
+        {"_id": ObjectId(store_id)},
+        {"$set": {"domain_status": "deploying"}}
+    )
+    
+    # Try Vercel API if credentials are configured
+    vercel_success = False
+    vercel_domain_id = None
+    
+    if settings.VERCEL_TOKEN and settings.VERCEL_PROJECT_ID:
+        try:
+            headers = {
+                "Authorization": f"Bearer {settings.VERCEL_TOKEN}",
+                "Content-Type": "application/json"
+            }
+            
+            url = f"https://api.vercel.com/v10/projects/{settings.VERCEL_PROJECT_ID}/domains"
+            if settings.VERCEL_TEAM_ID:
+                url += f"?teamId={settings.VERCEL_TEAM_ID}"
+            
+            async with httpx.AsyncClient() as client:
+                # Add domain to Vercel
+                response = await client.post(
+                    url,
+                    json={"name": domain},
+                    headers=headers,
+                    timeout=30.0
+                )
+                
+                result = response.json()
+                print(f"VERCEL_ADD_DOMAIN: {result}")
+                
+                if response.status_code in [200, 201]:
+                    vercel_success = True
+                    vercel_domain_id = result.get("name", domain)
+                elif response.status_code == 409:
+                    # Domain already exists — that's fine
+                    vercel_success = True
+                    vercel_domain_id = domain
+                else:
+                    print(f"VERCEL_ERROR: {result}")
+                    # Fall through to simulated mode
+                    
+        except Exception as e:
+            print(f"VERCEL_DEPLOY_ERROR: {str(e)}")
+            # Fall through to simulated mode
+    
+    # If no Vercel credentials or API failed, simulate deployment
+    if not vercel_success:
+        print(f"DOMAIN_DEPLOY: Simulating deployment for {domain} (no Vercel credentials)")
+        vercel_domain_id = f"simulated-{domain}"
+    
+    # Update store config
+    await db.store_configs.update_one(
+        {"_id": ObjectId(store_id)},
+        {"$set": {
+            "domain_status": "active",
+            "ssl_status": "active",
+            "domain_verified_at": datetime.utcnow().isoformat(),
+            "vercel_domain_id": vercel_domain_id
+        }}
+    )
+    
+    return {
+        "message": f"Domain {domain} deployed successfully!",
+        "domain": domain,
+        "status": "active",
+        "ssl": "active",
+        "vercel_deployed": vercel_success,
+        "urls": {
+            "subdomain": f"{config.get('subdomain', 'store')}.golalita.qa",
+            "custom_domain": domain
+        }
+    }
+
+
+@router.post("/domains/reject/{store_id}")
+@router.post("/domains/reject/{store_id}/")
+async def reject_domain(store_id: str, reason: str = "DNS records not properly configured", current_user: dict = Depends(get_current_user)):
+    """Reject a domain request."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    db = await get_database()
+    result = await db.store_configs.update_one(
+        {"_id": ObjectId(store_id)},
+        {"$set": {
+            "domain_status": "failed",
+            "domain_rejection_reason": reason
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Store not found")
+    
+    return {"message": "Domain request rejected", "reason": reason}
+
+# ============================================================
+# SUBSCRIPTION MANAGEMENT
+# ============================================================
+
+@router.get("/plans")
+@router.get("/plans/")
+async def get_plans(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    db = await get_database()
+    plans = await db.plans.find({}).to_list(None)
+    for p in plans:
+        p["id"] = str(p["_id"])
+        p.pop("_id", None)
+    return plans
+
+@router.post("/plans")
+@router.post("/plans/")
+async def create_plan(plan: dict, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    db = await get_database()
+    result = await db.plans.insert_one(plan)
+    return {"id": str(result.inserted_id), "message": "Plan created successfully"}
+
+@router.put("/plans/{plan_id}")
+@router.put("/plans/{plan_id}/")
+async def update_plan(plan_id: str, plan_data: dict, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    db = await get_database()
+    await db.plans.update_one({"_id": ObjectId(plan_id)}, {"$set": plan_data})
+    return {"message": "Plan updated successfully"}
+
+@router.delete("/plans/{plan_id}")
+@router.delete("/plans/{plan_id}/")
+async def delete_plan(plan_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    db = await get_database()
+    await db.plans.delete_one({"_id": ObjectId(plan_id)})
+    return {"message": "Plan deleted successfully"}

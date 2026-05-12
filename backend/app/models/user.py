@@ -7,7 +7,7 @@ class UserBase(BaseModel):
     email: EmailStr
     phone: Optional[str] = None
     role: str = "merchant"  # merchant or customer
-    plan: str = "Basic"
+    plan: str = "None"
 
 class UserCreate(UserBase):
     password: str

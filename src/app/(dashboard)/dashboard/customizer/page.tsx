@@ -80,6 +80,17 @@ export default function CustomizerEditorialPage() {
     const [isApproved, setIsApproved] = useState(false);
     const [isPublished, setIsPublished] = useState(false);
 
+    // Domain State
+    const [domainInput, setDomainInput] = useState("");
+    const [domainStatus, setDomainStatus] = useState("none");
+    const [customDomain, setCustomDomain] = useState<string | null>(null);
+    const [dnsRecords, setDnsRecords] = useState<any[]>([]);
+    const [subdomainUrl, setSubdomainUrl] = useState("");
+    const [sslStatus, setSslStatus] = useState("none");
+    const [isDomainSaving, setIsDomainSaving] = useState(false);
+    const [domainRejection, setDomainRejection] = useState<string | null>(null);
+    const [copiedRecord, setCopiedRecord] = useState<number | null>(null);
+
     // Color State - Defaulting to Professional Blue/White
     const [primaryColor, setPrimaryColor] = useState("#2563eb");
     const [bgColor, setBgColor] = useState("#ffffff");
@@ -143,6 +154,12 @@ export default function CustomizerEditorialPage() {
                     if (config.is_approved !== undefined) setIsApproved(config.is_approved);
                     if (config.is_published !== undefined) setIsPublished(config.is_published);
                     if (config.hero_library && config.hero_library.length > 0) setHeroLibrary(config.hero_library);
+                    if (config.subdomain) setSubdomainUrl(`${config.subdomain}.golalita.qa`);
+                    if (config.custom_domain) { setCustomDomain(config.custom_domain); setDomainInput(config.custom_domain); }
+                    if (config.domain_status) setDomainStatus(config.domain_status);
+                    if (config.ssl_status) setSslStatus(config.ssl_status);
+                    if (config.dns_records) setDnsRecords(config.dns_records);
+                    if (config.domain_rejection_reason) setDomainRejection(config.domain_rejection_reason);
                 }
 
                 // Fetch Products
@@ -318,18 +335,129 @@ export default function CustomizerEditorialPage() {
                 <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-8 items-start relative">
                     {/* LEFT CONTROLS (4 Cols) */}
                     <div className="xl:col-span-4 space-y-6 sticky top-8 pb-12">
-                        {/* Domain Interface */}
-                        <div className={`bg-white border-2 p-6 rounded-2xl shadow-sm relative overflow-hidden group ${isPublished && !isApproved ? 'border-amber-500/20' : 'border-emerald-500/20'}`}>
-                            <div className="flex justify-between items-center mb-4 relative z-10">
-                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">PROTOCOL STATUS</h3>
-                                {isPublished && !isApproved ? <Clock size={14} className="text-amber-500" /> : <Globe size={14} className="text-emerald-500" />}
+                        {/* Domain Manager */}
+                        <div className="bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Domain Manager</h3>
+                                <Globe size={14} className="text-blue-500" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[14px] font-bold text-slate-900 tracking-tight">lux-apparel.golalita.qa</span>
-                                <span className={`text-[8px] font-black uppercase mt-1 tracking-widest ${isPublished && !isApproved ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                    {isPublished && !isApproved ? '• Pending Compliance Review' : '• Global Node Active'}
-                                </span>
+
+                            {/* Subdomain (always active) */}
+                            <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl">
+                                <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mb-1">Subdomain (Always Live)</p>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[12px] font-bold text-emerald-800 tracking-tight">{subdomainUrl || 'store.golalita.qa'}</span>
+                                    <button onClick={() => { navigator.clipboard.writeText(`https://${subdomainUrl}`); }} className="text-[8px] font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded-md hover:bg-emerald-200 transition-all">Copy</button>
+                                </div>
                             </div>
+
+                            {/* Custom Domain Input */}
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Custom Domain</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={domainInput}
+                                        onChange={(e) => setDomainInput(e.target.value)}
+                                        placeholder="mystore.com"
+                                        disabled={domainStatus === 'active'}
+                                        className="flex-1 bg-slate-50 border border-slate-200 p-3 rounded-xl text-[11px] font-bold outline-none focus:border-blue-500 focus:bg-white transition-all disabled:opacity-50"
+                                    />
+                                    {domainStatus !== 'active' && (
+                                        <button
+                                            onClick={async () => {
+                                                if (!domainInput.trim()) return;
+                                                setIsDomainSaving(true);
+                                                try {
+                                                    const token = localStorage.getItem('golalita_token');
+                                                    const res = await fetch('/api/python/store-config/domain/', {
+                                                        method: 'PUT',
+                                                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ custom_domain: domainInput.trim() })
+                                                    });
+                                                    if (res.ok) {
+                                                        const data = await res.json();
+                                                        setCustomDomain(data.custom_domain);
+                                                        setDomainStatus(data.domain_status || 'pending_dns');
+                                                        setDnsRecords(data.dns_records || []);
+                                                        setDomainRejection(null);
+                                                        // Update subdomain info in UI
+                                                        if (data.subdomain_url) setSubdomainUrl(data.subdomain_url);
+                                                    } else {
+                                                        const err = await res.json();
+                                                        alert(err.detail || 'Failed to submit domain');
+                                                    }
+                                                } catch (e) { console.error(e); alert('Error submitting domain'); }
+                                                finally { setIsDomainSaving(false); }
+                                            }}
+                                            disabled={isDomainSaving}
+                                            className="px-4 bg-blue-600 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all disabled:opacity-50 whitespace-nowrap"
+                                        >
+                                            {isDomainSaving ? '...' : (customDomain && domainInput === customDomain ? 'Update' : 'Connect')}
+                                        </button>
+                                    )}
+                                    {domainStatus === 'active' && (
+                                        <button
+                                            onClick={async () => {
+                                                setIsDomainSaving(true);
+                                                try {
+                                                    const token = localStorage.getItem('golalita_token');
+                                                    await fetch('/api/python/store-config/domain/', {
+                                                        method: 'PUT',
+                                                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ custom_domain: '' })
+                                                    });
+                                                    setCustomDomain(null); setDomainStatus('none'); setDnsRecords([]); setDomainInput('');
+                                                } catch (e) { console.error(e); }
+                                                finally { setIsDomainSaving(false); }
+                                            }}
+                                            className="px-4 bg-rose-50 text-rose-500 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
+                                        >Remove</button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Status Badge */}
+                            {domainStatus !== 'none' && (
+                                <div className={`p-3 rounded-xl border text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ${
+                                    domainStatus === 'active' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                                    domainStatus === 'dns_verified' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                                    domainStatus === 'pending_dns' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                                    domainStatus === 'deploying' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' :
+                                    'bg-rose-50 border-rose-200 text-rose-700'
+                                }`}>
+                                    <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: domainStatus === 'active' ? '#10b981' : domainStatus === 'pending_dns' ? '#f59e0b' : domainStatus === 'failed' ? '#ef4444' : '#3b82f6' }} />
+                                    {domainStatus === 'active' && `✅ ${customDomain} is LIVE with SSL`}
+                                    {domainStatus === 'dns_verified' && '🔵 DNS Verified — Awaiting Deployment'}
+                                    {domainStatus === 'pending_dns' && '🟡 Configure DNS Records Below'}
+                                    {domainStatus === 'deploying' && '🔄 Deploying...'}
+                                    {domainStatus === 'failed' && `❌ Failed: ${domainRejection || 'Check DNS'}`}
+                                </div>
+                            )}
+
+                            {/* DNS Records */}
+                            {dnsRecords.length > 0 && domainStatus !== 'active' && (
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Add these DNS records at your registrar:</p>
+                                    {dnsRecords.map((record: any, idx: number) => (
+                                        <div key={idx} className="bg-white border border-slate-100 rounded-lg p-3 flex items-center justify-between">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[8px] font-black bg-slate-900 text-white px-1.5 py-0.5 rounded">{record.type}</span>
+                                                    <span className="text-[10px] font-bold text-slate-700">{record.name}</span>
+                                                </div>
+                                                <p className="text-[10px] font-mono text-blue-600 mt-1">{record.value}</p>
+                                                <p className="text-[8px] text-slate-400 mt-0.5">{record.purpose}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => { navigator.clipboard.writeText(record.value); setCopiedRecord(idx); setTimeout(() => setCopiedRecord(null), 2000); }}
+                                                className="text-[8px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-2 py-1 rounded hover:bg-slate-100 transition-all shrink-0"
+                                            >{copiedRecord === idx ? '✓ Copied' : 'Copy'}</button>
+                                        </div>
+                                    ))}
+                                    <p className="text-[8px] text-amber-600 font-bold">⚠️ DNS changes can take 5 min to 48 hours to propagate</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* BRAND IDENTITY */}
@@ -494,7 +622,7 @@ export default function CustomizerEditorialPage() {
                                     </div>
                                     <div className="bg-white border border-slate-200 px-10 py-1.5 rounded-lg flex items-center gap-3">
                                         <Globe size={10} className="text-slate-300" />
-                                        <span className="text-[10px] font-medium text-slate-400 tracking-tight">preview.lux-apparel.golalita.qa</span>
+                                        <span className="text-[10px] font-medium text-slate-400 tracking-tight">preview.{subdomainUrl || 'store.golalita.qa'}</span>
                                     </div>
                                 </div>
                                 <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-300">

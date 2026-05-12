@@ -5,6 +5,8 @@ import time
 from app.database import connect_to_mongo, close_mongo_connection
 from app.routes import auth, products, orders, dashboard, merchants, public_stores, admin, user_actions
 from app.routes.store_config import router as store_config_router
+from app.routes.skipcash import router as skipcash_router
+from app.routes.subscriptions import router as subscriptions_router
 
 app = FastAPI(title="Golalita E-Commerce API")
 
@@ -34,14 +36,16 @@ async def log_requests(request: Request, call_next):
 
 # Include Routers
 app.include_router(store_config_router, prefix="/api/store-config")
-app.include_router(auth.router)
+app.include_router(auth.router, prefix="/api/auth")
 app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(dashboard.router)
 app.include_router(merchants.router)
 app.include_router(public_stores.router)
-app.include_router(admin.router)
+app.include_router(admin.router, prefix="/api/admin")
 app.include_router(user_actions.router)
+app.include_router(skipcash_router)
+app.include_router(subscriptions_router)
 
 @app.on_event("startup")
 async def startup_event():
@@ -57,15 +61,10 @@ async def startup_event():
 async def shutdown_event():
     await close_mongo_connection()
 
-@app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
-async def catch_all(request: Request, full_path: str):
-    return {
-        "message": "Debug: Route not found",
-        "path": full_path,
-        "method": request.method,
-        "root_path": request.scope.get("root_path"),
-        "headers": dict(request.headers)
-    }
+@app.get("/api/admin/test-route")
+@app.get("/api/admin/test-route/")
+async def test_route():
+    return [{"id": "1", "name": "Test Works"}]
 
 @app.get("/")
 async def root():
@@ -74,3 +73,7 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+@app.get("/api/admin/test-route")
+async def test_route():
+    return [{"id": "1", "name": "Test Works"}]

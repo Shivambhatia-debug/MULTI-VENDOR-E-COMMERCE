@@ -26,6 +26,7 @@ interface MerchantContextType {
         branches: number;
     };
     isAuthenticated: boolean;
+    refreshUser: () => Promise<void>;
 }
 
 const MerchantContext = createContext<MerchantContextType | undefined>(undefined);
@@ -77,6 +78,24 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
         branches: activePlan === "Basic" ? 1 : 3,
     };
 
+    const refreshUser = async () => {
+        if (!token) return;
+        try {
+            const res = await fetch("/api/python/auth/me", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const userData = await res.json();
+                setUser(userData);
+                setActivePlan(userData.plan as MerchantPlan);
+                localStorage.setItem("golalita_user", JSON.stringify(userData));
+                localStorage.setItem("golalita_merchant_plan", userData.plan);
+            }
+        } catch (err) {
+            console.error("REFRESH_USER_ERROR:", err);
+        }
+    };
+
     return (
         <MerchantContext.Provider value={{
             user,
@@ -86,7 +105,8 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
             login,
             logout,
             planLimits,
-            isAuthenticated: !!token
+            isAuthenticated: !!token,
+            refreshUser
         }}>
             {children}
         </MerchantContext.Provider>

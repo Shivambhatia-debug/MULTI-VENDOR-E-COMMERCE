@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 
 class StoreConfigBase(BaseModel):
@@ -22,6 +22,12 @@ class StoreConfigBase(BaseModel):
     subdomain: str = ""
     custom_domain: Optional[str] = None
     ssl_status: str = "none"  # none | provisioning | active
+    domain_status: str = "none"  # none | pending_dns | dns_verified | deploying | active | failed
+    dns_records: List[Dict] = []
+    domain_submitted_at: Optional[str] = None
+    domain_verified_at: Optional[str] = None
+    domain_rejection_reason: Optional[str] = None
+    vercel_domain_id: Optional[str] = None
     is_published: bool = False
     hero_library: List[str] = []
 
@@ -41,3 +47,4 @@ class StoreConfigOut(StoreConfigBase):
     merchant_reviews: Optional[int] = 0
     cover_image: Optional[str] = None
     updated_at: Optional[str] = None
+

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard, Users, Store, Settings,
-    Bell, ShieldCheck, BarChart3, LogOut, Menu, X, Sparkles, ShoppingCart
+    Bell, ShieldCheck, BarChart3, LogOut, Menu, X, Sparkles, ShoppingCart, Globe
 } from "lucide-react";
 import { useState } from "react";
 
@@ -17,6 +17,8 @@ const menuItems = [
     { label: "Marketplace", icon: Sparkles, href: "/admin/marketplace" },
     { label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
     { label: "Verification", icon: ShieldCheck, href: "/admin/verification" },
+    { label: "Domains", icon: Globe, href: "/admin/domains" },
+    { label: "Subscriptions", icon: ShoppingCart, href: "/admin/subscriptions" },
     { label: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 

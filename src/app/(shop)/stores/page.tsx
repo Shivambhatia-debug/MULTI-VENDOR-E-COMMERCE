@@ -149,7 +149,7 @@ export default function StoresPage() {
                                     </div>
 
                                     <Link
-                                        href={`/stores/${store.subdomain || store.id}`}
+                                        href={`/${store.custom_domain || store.subdomain || store.id}`}
                                         className="w-full md:w-auto px-10 py-4 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center justify-center gap-3 active:scale-95 shadow-xl"
                                         style={{ backgroundColor: store.primary_color || '#0f172a' }}
                                     >

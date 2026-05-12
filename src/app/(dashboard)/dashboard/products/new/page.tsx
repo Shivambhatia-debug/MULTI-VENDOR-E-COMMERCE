@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import {
     ArrowLeft,
@@ -35,7 +35,7 @@ export default function NewProductPage() {
         name: "",
         price: "",
         originalPrice: "",
-        category: "Electronics",
+        category: "",
         description: "",
         image: "",
         images: [] as string[],
@@ -43,6 +43,31 @@ export default function NewProductPage() {
         sku: "",
         status: "Active"
     });
+
+    const [availableCategories, setAvailableCategories] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch("/api/python/public/marketplace/settings/");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.categories && data.categories.length > 0) {
+                        setAvailableCategories(data.categories);
+                        setFormData(prev => ({ ...prev, category: data.categories[0].name }));
+                    } else {
+                        // Fallback
+                        const fallbacks = ["Electronics", "Apparel", "Home Decor", "Accessories"];
+                        setAvailableCategories(fallbacks.map(name => ({ name })));
+                        setFormData(prev => ({ ...prev, category: "Electronics" }));
+                    }
+                }
+            } catch (err) {
+                console.error("FETCH_CATEGORIES_ERROR:", err);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -335,12 +360,9 @@ export default function NewProductPage() {
                                         onChange={handleChange}
                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-[11px] font-black uppercase tracking-widest focus:bg-white focus:border-slate-300 outline-none transition-all shadow-sm appearance-none cursor-pointer"
                                     >
-                                        <option>Electronics</option>
-                                        <option>Apparel</option>
-                                        <option>Home Decór</option>
-                                        <option>Accessories</option>
-                                        <option>Beauty</option>
-                                        <option>Gourmet</option>
+                                        {availableCategories.map(cat => (
+                                            <option key={cat.name} value={cat.name}>{cat.name}</option>
+                                        ))}
                                     </select>
                                 </div>
 

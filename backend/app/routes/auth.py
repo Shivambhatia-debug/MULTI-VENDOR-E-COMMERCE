@@ -13,7 +13,7 @@ import random
 import string
 from bson import ObjectId
 
-router = APIRouter(prefix="/api/auth", tags=["auth"], redirect_slashes=False)
+router = APIRouter(tags=["auth"], redirect_slashes=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -123,6 +123,12 @@ async def register(user_in: UserCreate, otp: str, business_name: Optional[str] =
         password = user_dict.pop("password")
         user_dict["password_hash"] = get_password_hash(password)
         user_dict["created_at"] = datetime.utcnow()
+        
+        # Add 15-day free trial for merchants
+        if user_dict.get("role") == "merchant":
+            user_dict["trial_start"] = datetime.utcnow()
+            user_dict["trial_end"] = datetime.utcnow() + timedelta(days=15)
+            user_dict["subscription_status"] = "trial"
         
         result = await db.users.insert_one(user_dict)
         user_id = str(result.inserted_id)

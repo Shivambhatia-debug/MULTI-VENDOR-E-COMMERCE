@@ -83,7 +83,13 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 group">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center group-hover:scale-105 transition-all duration-300 relative">
-                        <Image src={isLight ? "/web background/web background/logo 2 png.png" : "/web background/web background/logo 3 png.png"} alt="Golalita" fill className="object-contain" />
+                        <Image 
+                            src={isLight ? "/web background/web background/logo 2 png.png" : "/web background/web background/logo 3 png.png"} 
+                            alt="Golalita" 
+                            fill 
+                            sizes="40px"
+                            className="object-contain" 
+                        />
                     </div>
                     <span className={`text-lg sm:text-xl font-black tracking-tighter flex items-center gap-1 uppercase transition-colors ${isLight ? "text-slate-950" : "text-white"}`}>
                         Golalita
@@ -247,7 +253,7 @@ const Navbar = ({ invert = false }: { invert?: boolean }) => {
                             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 relative">
-                                        <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill className="object-contain" />
+                                        <Image src="/web background/web background/logo 2 png.png" alt="Golalita" fill sizes="32px" className="object-contain" />
                                     </div>
                                     <span className="text-sm font-black uppercase tracking-widest text-slate-900">Menu</span>
                                 </div>

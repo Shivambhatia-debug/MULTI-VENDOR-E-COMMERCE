@@ -7,13 +7,11 @@ import {
     ShieldCheck,
     CreditCard,
     Wallet,
-    Smartphone,
     MapPin,
     Truck,
     CheckCircle2,
     Lock,
     Tag,
-    Ticket,
     Package,
     ArrowRight
 } from "lucide-react";
@@ -29,7 +27,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const { cartItems, subtotal, clearCart } = useCart();
     const { user, isAuthenticated } = useMerchant();
-    const [selectedPayment, setSelectedPayment] = useState("card");
+    const [selectedPayment, setSelectedPayment] = useState("skipcash");
     const [couponCode, setCouponCode] = useState("");
     const [isCouponApplied, setIsCouponApplied] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,6 +66,7 @@ export default function CheckoutPage() {
             const token = localStorage.getItem("golalita_token");
             
             const merchants = Array.from(new Set(cartItems.map(item => item.product.merchant_id)));
+            const orderIds: string[] = [];
             
             for (const mId of merchants) {
                 const merchantItems = cartItems.filter(item => item.product.merchant_id === mId);
@@ -89,7 +88,8 @@ export default function CheckoutPage() {
                         quantity: item.quantity
                     })),
                     total: `QAR ${merchantSubtotal.toFixed(2)}`,
-                    status: "Processing",
+                    status: selectedPayment === "cod" ? "Processing" : "Pending Payment",
+                    payment_status: selectedPayment === "cod" ? "cod" : "pending",
                     method: selectedPayment.toUpperCase(),
                     merchant_id: mId,
                     delivery_estimate: new Date(Date.now() + 3*24*60*60*1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
@@ -105,8 +105,51 @@ export default function CheckoutPage() {
                 });
                 
                 if (!res.ok) throw new Error("Order creation failed");
+                const orderResult = await res.json();
+                if (orderResult.id) orderIds.push(orderResult.id);
             }
 
+            // For SkipCash payment, redirect to payment gateway
+            if (selectedPayment === "skipcash") {
+                const paymentRes = await fetch("/api/python/payments/create", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        amount: total.toFixed(2),
+                        first_name: formData.fullName || user?.name || "Customer",
+                        email: user?.email || "customer@golalita.com",
+                        phone: formData.phone || "+97400000000",
+                        order_id: orderIds[0] || "",
+                        description: `Golalita Order - ${cartItems.length} items`,
+                        return_url: `${window.location.origin}/payment/callback/`,
+                        payment_type: "marketplace"
+                    })
+                });
+
+                if (!paymentRes.ok) {
+                    const errData = await paymentRes.json();
+                    throw new Error(errData.detail || "Payment creation failed");
+                }
+
+                const paymentData = await paymentRes.json();
+                
+                // Store order info for callback
+                localStorage.setItem("golalita_pending_payment", JSON.stringify({
+                    paymentId: paymentData.paymentId,
+                    transactionId: paymentData.transactionId,
+                    orderIds: orderIds
+                }));
+
+                // Redirect to SkipCash payment page
+                clearCart();
+                window.location.href = paymentData.payUrl;
+                return;
+            }
+
+            // For COD, go directly to success
             clearCart();
             router.push("/payment/success");
         } catch (err) {
@@ -311,43 +354,52 @@ export default function CheckoutPage() {
                                             <h2 className="text-lg sm:text-xl font-black uppercase tracking-tighter italic">Payment Protocol</h2>
                                         </div>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                                             {[
-                                                { id: "card", name: "Credit Card", icon: CreditCard },
-                                                { id: "apple", name: "Apple Pay", icon: Smartphone },
-                                                { id: "qpay", name: "QPay", icon: Wallet },
+                                                { id: "skipcash", name: "SkipCash", desc: "Card / Digital Wallet", icon: CreditCard },
+                                                { id: "cod", name: "Cash on Delivery", desc: "Pay when received", icon: Wallet },
                                             ].map((method) => (
                                                 <button
                                                     key={method.id}
                                                     onClick={() => setSelectedPayment(method.id)}
-                                                    className={`p-4 rounded-2xl border-2 transition-all flex flex-row sm:flex-col items-center justify-center gap-3 ${selectedPayment === method.id ? "border-blue-600 bg-blue-50/50" : "border-slate-100 hover:border-slate-200"}`}
+                                                    className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${selectedPayment === method.id ? "border-blue-600 bg-blue-50/50 shadow-lg" : "border-slate-100 hover:border-slate-200"}`}
                                                 >
-                                                    <method.icon size={20} className={selectedPayment === method.id ? "text-blue-600" : "text-slate-400"} />
-                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${selectedPayment === method.id ? "text-blue-600" : "text-slate-500"}`}>{method.name}</span>
+                                                    <method.icon size={24} className={selectedPayment === method.id ? "text-blue-600" : "text-slate-400"} />
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${selectedPayment === method.id ? "text-blue-600" : "text-slate-500"}`}>{method.name}</span>
+                                                    <span className="text-[8px] font-bold text-slate-400">{method.desc}</span>
                                                 </button>
                                             ))}
                                         </div>
 
-                                        {selectedPayment === "card" && (
+                                        {selectedPayment === "skipcash" && (
                                             <motion.div
                                                 initial={{ opacity: 0, height: 0 }}
                                                 animate={{ opacity: 1, height: "auto" }}
-                                                className="space-y-4"
+                                                className="bg-blue-50 border border-blue-100 rounded-2xl p-5 space-y-3"
                                             >
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Card Number</label>
-                                                    <input type="text" placeholder="**** **** **** 1234" className="w-full bg-slate-50 border-none rounded-xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all font-mono" />
+                                                <div className="flex items-center gap-3">
+                                                    <ShieldCheck size={18} className="text-blue-600" />
+                                                    <span className="text-[10px] font-black text-blue-800 uppercase tracking-widest">Secure Payment via SkipCash</span>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Expiry</label>
-                                                        <input type="text" placeholder="MM/YY" className="w-full bg-slate-50 border-none rounded-xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
-                                                    </div>
-                                                    <div className="space-y-1.5">
-                                                        <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">CVV</label>
-                                                        <input type="text" placeholder="***" className="w-full bg-slate-50 border-none rounded-xl p-4 text-xs font-bold focus:ring-2 focus:ring-blue-600 transition-all" />
-                                                    </div>
+                                                <p className="text-[10px] text-blue-600 font-bold leading-relaxed">
+                                                    You will be redirected to SkipCash&apos;s secure payment page to complete your transaction. Supports Visa, Mastercard &amp; NAPS Debit Cards.
+                                                </p>
+                                            </motion.div>
+                                        )}
+
+                                        {selectedPayment === "cod" && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: "auto" }}
+                                                className="bg-amber-50 border border-amber-100 rounded-2xl p-5 space-y-3"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Truck size={18} className="text-amber-600" />
+                                                    <span className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Cash on Delivery</span>
                                                 </div>
+                                                <p className="text-[10px] text-amber-700 font-bold leading-relaxed">
+                                                    Pay in cash when your order arrives. Please keep exact change ready for the delivery agent.
+                                                </p>
                                             </motion.div>
                                         )}
                                     </div>

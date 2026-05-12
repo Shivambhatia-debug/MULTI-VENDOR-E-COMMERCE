@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Check, X, Shield, Smartphone, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMerchant, MerchantPlan } from "@/context/MerchantContext";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -60,17 +61,122 @@ const pricingSections = [
     }
 ];
 
-const plans = [
-    { name: "Basic", nameAr: "الأولى", price: "3500 QAR", icon: Zap, highlight: false },
-    { name: "Premium", nameAr: "المميزة", price: "4500 QAR", icon: Shield, highlight: true },
-    { name: "Mobile App", nameAr: "تطبيق الجوال", price: "5500 QAR", icon: Smartphone, highlight: false }
-];
-
 export default function Pricing() {
-    const { activePlan, updatePlan } = useMerchant();
+    const { user, isAuthenticated, activePlan, updatePlan, refreshUser } = useMerchant();
     const { t, language } = useLanguage();
+    const router = useRouter();
     const [expandedSection, setExpandedSection] = useState<number | null>(null);
+    const [isUpgrading, setIsUpgrading] = useState<string | null>(null);
+    const [dynamicPlans, setDynamicPlans] = useState<any[]>([]);
+    const [isLoadingPlans, setIsLoadingPlans] = useState(true);
     const isAr = language === 'ar';
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                const res = await fetch("/api/python/subscriptions/plans");
+                if (res.ok) {
+                    const data = await res.json();
+                    setDynamicPlans(data);
+                }
+            } catch (err) {
+                console.error("FETCH_PLANS_ERROR:", err);
+            } finally {
+                setIsLoadingPlans(false);
+            }
+        };
+        fetchPlans();
+    }, []);
+
+    // Fallback to static if loading or failed (minimal set)
+    const displayPlans = dynamicPlans.length > 0 ? dynamicPlans : [
+        { name: "Basic", price: "3500", icon: Zap, highlight: false },
+        { name: "Premium", price: "4500", icon: Shield, highlight: true },
+        { name: "Mobile App", price: "5500", icon: Smartphone, highlight: false }
+    ];
+
+    const getPlanIcon = (name?: string) => {
+        if (!name) return Smartphone;
+        if (name.includes("Basic")) return Zap;
+        if (name.includes("Premium")) return Shield;
+        return Smartphone;
+    };
+
+    const handleSelectPlan = async (planName: string) => {
+        if (!isAuthenticated) {
+            router.push("/login?redirect=pricing");
+            return;
+        }
+
+        if (activePlan === planName) return;
+
+        // If it's the Basic plan and we want to start a trial
+        if (planName === "Basic") {
+            setIsUpgrading("Basic");
+            try {
+                const token = localStorage.getItem("golalita_token");
+                const res = await fetch("/api/python/subscriptions/start-trial", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (res.ok) {
+                    await refreshUser();
+                    router.push("/dashboard");
+                    return;
+                } else {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Failed to start trial");
+                }
+            } catch (err) {
+                console.error("TRIAL_ERROR:", err);
+                alert("Failed to start trial. You might already have one.");
+            } finally {
+                setIsUpgrading(null);
+            }
+            return;
+        }
+
+        // For Premium and Mobile App, go to SkipCash
+        setIsUpgrading(planName);
+        try {
+            const token = localStorage.getItem("golalita_token");
+            const res = await fetch("/api/python/subscriptions/upgrade", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    plan: planName,
+                    return_url: `${window.location.origin}/payment/callback/`
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || "Upgrade failed");
+            }
+
+            const data = await res.json();
+            if (data.payUrl) {
+                // Store payment info for callback tracking
+                localStorage.setItem("golalita_pending_payment", JSON.stringify({
+                    paymentId: data.paymentId,
+                    plan: planName,
+                    type: "subscription"
+                }));
+                window.location.href = data.payUrl;
+            }
+        } catch (err) {
+            console.error("UPGRADE_ERROR:", err);
+            alert("Failed to initiate upgrade. Please try again.");
+        } finally {
+            setIsUpgrading(null);
+        }
+    };
 
     return (
         <section className="section-padding py-16 bg-slate-50" id="pricing">
@@ -94,6 +200,31 @@ export default function Pricing() {
                     )}
                 </div>
 
+                {/* 15 Day Free Trial Banner */}
+                <div className="mb-6 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg shadow-emerald-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                            <Zap size={20} className="text-white" />
+                        </div>
+                        <div>
+                            <p className="text-white text-sm font-black uppercase tracking-tight">15 Days Free Trial</p>
+                            <p className="text-emerald-100 text-[10px] font-bold">No credit card required • Full access to all features</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            if (isAuthenticated) {
+                                handleSelectPlan("Basic");
+                            } else {
+                                router.push("/get-started");
+                            }
+                        }}
+                        className="bg-white text-emerald-600 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-sm whitespace-nowrap"
+                    >
+                        {isUpgrading === "Basic" ? "Starting..." : "Start Free Trial"}
+                    </button>
+                </div>
+
                 {/* Pricing Table */}
                 <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-xl bg-white">
                     <div className="overflow-x-auto">
@@ -103,7 +234,7 @@ export default function Pricing() {
                                     <th className="w-[34%] p-5 text-left bg-slate-50/30">
                                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{t("features_breakdown")}</p>
                                     </th>
-                                    {plans.map((plan, i) => (
+                                    {displayPlans.map((plan, i) => (
                                         <th key={i} className={`w-[22%] p-5 text-center ${plan.highlight ? "bg-slate-50 relative" : ""}`}>
                                             {plan.highlight && (
                                                 <div className="absolute top-0 inset-x-0 h-1 bg-slate-950"></div>
@@ -111,14 +242,20 @@ export default function Pricing() {
                                             <div className="flex flex-col items-center gap-2">
                                                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-transform hover:scale-110 ${plan.highlight ? "bg-slate-950 text-white shadow-xl shadow-slate-200" : "bg-slate-50 text-slate-400 border border-slate-100"
                                                     }`}>
-                                                    <plan.icon size={18} />
+                                                    {(() => {
+                                                        const Icon = getPlanIcon(plan.name);
+                                                        return <Icon size={18} />;
+                                                    })()}
                                                 </div>
                                                 <div className="leading-tight">
-                                                    <p className="text-sm font-black text-slate-900">{isAr ? plan.nameAr : plan.name}</p>
+                                                    <p className="text-sm font-black text-slate-900">{isAr && plan.nameAr ? plan.nameAr : plan.name}</p>
                                                 </div>
                                                 <div className="mt-1">
-                                                    <p className="text-xl font-black text-slate-950 leading-none">{plan.price}</p>
+                                                    <p className="text-xl font-black text-slate-950 leading-none">{plan.price} QAR</p>
                                                     <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">{t("per_year")}</p>
+                                                </div>
+                                                <div className="mt-2 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full">
+                                                    <span className="text-[8px] font-black uppercase tracking-widest">15 Days Free</span>
                                                 </div>
                                             </div>
                                         </th>
@@ -156,7 +293,7 @@ export default function Pricing() {
                                                         </div>
                                                     </td>
                                                     {feature.values.map((val, vIdx) => (
-                                                        <td key={vIdx} className={`px-4 py-3 text-center ${plans[vIdx].highlight ? "bg-slate-50/50" : ""}`}>
+                                                        <td key={vIdx} className={`px-4 py-3 text-center ${displayPlans[vIdx]?.highlight ? "bg-slate-50/50" : ""}`}>
                                                             <div className="flex items-center justify-center">
                                                                 {typeof val === "boolean" ? (
                                                                     val ? (
@@ -191,18 +328,27 @@ export default function Pricing() {
                                             </p>
                                         </div>
                                     </td>
-                                    {plans.map((plan, i) => (
+                                    {displayPlans.map((plan, i) => (
                                         <td key={i} className={`p-6 ${plan.highlight ? "bg-slate-50/50" : ""}`}>
                                             <button
-                                                onClick={() => updatePlan(plan.name as MerchantPlan)}
-                                                className={`w-full py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center shadow-2xl active:scale-95 ${activePlan === plan.name
+                                                onClick={() => handleSelectPlan(plan.name)}
+                                                disabled={isUpgrading !== null}
+                                                className={`w-full py-4 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center shadow-2xl active:scale-95 disabled:opacity-50 ${activePlan === plan.name
                                                     ? "bg-slate-200 text-slate-500 cursor-default"
                                                     : plan.highlight
                                                         ? "bg-slate-950 text-white hover:bg-slate-900 shadow-slate-200"
                                                         : "bg-white border-2 border-slate-950 text-slate-950 hover:bg-slate-950 hover:text-white"
                                                     }`}
                                             >
-                                                {activePlan === plan.name ? t("current_plan") : t("select")}
+                                                {isUpgrading === plan.name ? (
+                                                    <span className="animate-pulse">Processing...</span>
+                                                ) : (
+                                                    activePlan === plan.name 
+                                                        ? t("current_plan") 
+                                                        : plan.name === "Basic" 
+                                                            ? "Start Free Trial" 
+                                                            : "Buy Now"
+                                                )}
                                             </button>
                                         </td>
                                     ))}
