@@ -7,6 +7,7 @@ from app.routes import auth, products, orders, dashboard, merchants, public_stor
 from app.routes.store_config import router as store_config_router
 from app.routes.skipcash import router as skipcash_router
 from app.routes.subscriptions import router as subscriptions_router
+from app.routes.public import router as public_router
 
 app = FastAPI(title="Golalita E-Commerce API")
 
@@ -46,6 +47,7 @@ app.include_router(admin.router, prefix="/api/admin")
 app.include_router(user_actions.router)
 app.include_router(skipcash_router)
 app.include_router(subscriptions_router)
+app.include_router(public_router, prefix="/api/public")
 
 @app.on_event("startup")
 async def startup_event():

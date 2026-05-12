@@ -11,9 +11,9 @@ class ProductBase(BaseModel):
     images: List[str] = []
     rating: float = 0.0
     reviews: int = 0
-    sku: str
+    sku: str = "N/A"
     status: str = "Active"
-    stock: int
+    stock: int = 0
     merchantName: Optional[str] = None
     merchantRating: Optional[float] = None
     deliveryTime: Optional[str] = None

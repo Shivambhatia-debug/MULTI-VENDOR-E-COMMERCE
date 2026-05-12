@@ -29,6 +29,7 @@ class StoreConfigBase(BaseModel):
     domain_rejection_reason: Optional[str] = None
     vercel_domain_id: Optional[str] = None
     is_published: bool = False
+    is_approved: bool = False
     hero_library: List[str] = []
 
 class StoreConfigUpdate(StoreConfigBase):

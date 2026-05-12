@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, Loader2, Clock, ArrowRight, ShoppingBag } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Clock, ArrowRight, ShoppingBag, Smartphone, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import { useMerchant } from "@/context/MerchantContext";
 
@@ -110,34 +110,82 @@ export default function PaymentCallbackPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="space-y-8"
                     >
-                        <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-100">
-                            <CheckCircle2 size={48} className="text-emerald-600" />
+                        <div className="relative">
+                            <motion.div 
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", damping: 10, stiffness: 100, delay: 0.2 }}
+                                className="w-28 h-28 bg-slate-950 rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl relative z-10"
+                            >
+                                <CheckCircle2 size={56} className="text-white" />
+                            </motion.div>
+                            <motion.div 
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 border-2 border-dashed border-slate-200 rounded-full"
+                            />
                         </div>
-                        <div>
-                            <h1 className="text-3xl font-black text-slate-950 uppercase tracking-tighter">Payment Successful!</h1>
-                            <p className="text-sm text-slate-500 font-medium mt-2">Your order has been confirmed and is being processed.</p>
+
+                        <div className="space-y-3">
+                            <h1 className="text-4xl font-black text-slate-950 uppercase tracking-tighter italic">Protocol Authorized.</h1>
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest max-w-xs mx-auto">
+                                {JSON.parse(localStorage.getItem("golalita_pending_payment") || "{}").type === "subscription" 
+                                    ? "Your infrastructure has been upgraded to the new tier. System protocols are now operational."
+                                    : "Your transaction has been secured. Our logistics network has been notified."}
+                            </p>
                         </div>
+
                         {paymentInfo && (
-                            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-left space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount Paid</span>
-                                    <span className="text-lg font-black text-slate-950">QAR {paymentInfo.amount}</span>
+                            <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-2xl text-left space-y-4 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <BarChart3 size={80} className="text-slate-950" />
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Transaction ID</span>
-                                    <span className="text-[10px] font-bold text-slate-600 font-mono">{paymentInfo.transaction_id?.slice(0, 16)}...</span>
+                                
+                                <div className="flex justify-between items-center border-b border-slate-50 pb-4">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Transaction Value</span>
+                                    <span className="text-2xl font-black text-slate-950 italic">QAR {paymentInfo.amount}</span>
                                 </div>
+                                
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-1">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Node ID</span>
+                                        <p className="text-[10px] font-bold text-slate-950 font-mono tracking-tighter truncate">{paymentInfo.transaction_id}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Type</span>
+                                        <p className="text-[10px] font-black text-slate-950 uppercase italic">{paymentInfo.payment_type}</p>
+                                    </div>
+                                </div>
+
+                                {paymentInfo.plan && (
+                                    <div className="pt-4 mt-4 border-t border-slate-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-slate-950 rounded-lg flex items-center justify-center text-white">
+                                                <Smartphone size={16} />
+                                            </div>
+                                            <span className="text-[11px] font-black text-slate-950 uppercase tracking-tighter">{paymentInfo.plan} Tier Active</span>
+                                        </div>
+                                        <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[8px] font-black uppercase tracking-widest">Verified</div>
+                                    </div>
+                                )}
                             </div>
                         )}
-                        <div className="flex flex-col sm:flex-row gap-3">
+
+                        <div className="flex flex-col gap-3 pt-4">
                             {JSON.parse(localStorage.getItem("golalita_pending_payment") || "{}").type === "subscription" ? (
-                                <Link href="/dashboard" className="flex-1 bg-slate-950 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95">
-                                    <CheckCircle2 size={16} /> Go to Dashboard
-                                </Link>
+                                <>
+                                    <Link href="/dashboard" className="w-full bg-slate-950 text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-slate-900 transition-all flex items-center justify-center gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.1)] active:scale-95 group">
+                                        Initialize Dashboard <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                    </Link>
+                                    <Link href="/" className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-950 transition-colors">Return to Hub</Link>
+                                </>
                             ) : (
-                                <Link href="/products" className="flex-1 bg-slate-950 text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95">
-                                    <ShoppingBag size={16} /> Continue Shopping
-                                </Link>
+                                <>
+                                    <Link href="/products" className="w-full bg-slate-950 text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-slate-900 transition-all flex items-center justify-center gap-3 shadow-[0_20px_50px_rgba(0,0,0,0.1)] active:scale-95">
+                                        <ShoppingBag size={16} /> Continue Shopping
+                                    </Link>
+                                    <Link href="/orders" className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-slate-950 transition-colors">Track Your Package</Link>
+                                </>
                             )}
                         </div>
                     </motion.div>

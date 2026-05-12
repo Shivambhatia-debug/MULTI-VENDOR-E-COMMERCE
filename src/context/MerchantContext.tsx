@@ -12,12 +12,18 @@ interface User {
     phone?: string;
     role: string;
     plan: string;
+    subscription_status: string;
+    trial_end?: string;
+    subscription_paid_at?: string;
 }
 
 interface MerchantContextType {
     user: User | null;
     token: string | null;
     activePlan: MerchantPlan;
+    subscriptionStatus: string;
+    isTrialActive: boolean;
+    trialRemainingDays: number;
     updatePlan: (plan: MerchantPlan) => void;
     login: (token: string, userData: User) => void;
     logout: () => void;
@@ -96,11 +102,28 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const subscriptionStatus = user?.subscription_status || "none";
+    
+    let isTrialActive = false;
+    let trialRemainingDays = 0;
+    
+    if (user?.trial_end) {
+        const end = new Date(user.trial_end);
+        const now = new Date();
+        if (now < end) {
+            isTrialActive = true;
+            trialRemainingDays = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        }
+    }
+
     return (
         <MerchantContext.Provider value={{
             user,
             token,
             activePlan,
+            subscriptionStatus,
+            isTrialActive,
+            trialRemainingDays,
             updatePlan,
             login,
             logout,

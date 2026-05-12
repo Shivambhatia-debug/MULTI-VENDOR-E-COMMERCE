@@ -6,8 +6,14 @@ class UserBase(BaseModel):
     name: str
     email: EmailStr
     phone: Optional[str] = None
-    role: str = "merchant"  # merchant or customer
-    plan: str = "None"
+    role: str = "merchant"  # merchant, admin, or customer
+    plan: str = "Basic"
+    subscription_status: str = "none"
+    trial_start: Optional[datetime] = None
+    trial_end: Optional[datetime] = None
+    subscription_paid_at: Optional[datetime] = None
+    store_slug: Optional[str] = None
+    custom_domain: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -20,3 +26,6 @@ class UserInDB(UserBase):
 class UserOut(UserBase):
     id: str
     created_at: datetime
+    subscription_status: str
+    trial_end: Optional[datetime] = None
+    subscription_paid_at: Optional[datetime] = None

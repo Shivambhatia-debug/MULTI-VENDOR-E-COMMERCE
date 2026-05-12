@@ -24,8 +24,12 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
-    const { activePlan, user } = useMerchant();
+    const { activePlan, user, subscriptionStatus, isTrialActive, trialRemainingDays, logout } = useMerchant();
     const { t, language } = useLanguage();
+    
+    const isLocked = activePlan === "Basic" && subscriptionStatus === "trial" && !isTrialActive;
+    const isNoPlan = subscriptionStatus === "none";
+    const needsPurchase = isLocked || isNoPlan;
     const [dashboardStats, setDashboardStats] = useState<any[]>([]);
     const [topProducts, setTopProducts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -84,7 +88,7 @@ export default function Dashboard() {
         <div className="min-h-screen bg-slate-50 flex">
             <Sidebar />
 
-            <main className="flex-1 p-6 lg:p-8">
+            <main className="flex-1 p-6 lg:p-8 relative">
                 {activePlan === "Basic" && (
                     <BasicPlanHeader
                         plan={activePlan}

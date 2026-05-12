@@ -20,8 +20,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { useMerchant } from "@/context/MerchantContext";
 
 export default function SettingsPage() {
+    const { user, activePlan } = useMerchant();
     const [activeTab, setActiveTab] = useState("store");
 
     const tabs = [
@@ -163,14 +165,19 @@ export default function SettingsPage() {
                                     <CreditCard size={44} />
                                 </div>
                                 <div className="space-y-4">
-                                    <h3 className="text-2xl font-black text-slate-950 tracking-tighter uppercase italic">Premium Infrastructure</h3>
+                                    <h3 className="text-2xl font-black text-slate-950 tracking-tighter uppercase italic">{user?.plan || activePlan} Infrastructure</h3>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] max-w-sm mx-auto leading-relaxed">
-                                        Your entity is deployed on the **Prime Strategy Stack (4,500 QAR/Year)**. Next billing cycle initializes: <span className="text-slate-950">April 2027</span>.
+                                        Your entity is deployed on the <span className="text-slate-950">**{user?.plan || activePlan} Stack**</span>. 
+                                        {user?.trial_end && !user?.subscription_paid_at ? (
+                                            <> Trial protocol concludes on: <span className="text-slate-950 font-black">{new Date(user.trial_end).toLocaleDateString()}</span>.</>
+                                        ) : (
+                                            <> Next billing cycle initializes: <span className="text-slate-950 font-black">Annual Cycle</span>.</>
+                                        )}
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap justify-center gap-4">
                                     <button className="px-10 py-4 bg-slate-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-900 transition-all shadow-xl active:scale-95">Download Protocol Invoice</button>
-                                    <button className="px-10 py-4 bg-white border border-slate-200 text-slate-950 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-sm">Recalibrate Plan</button>
+                                    <Link href="/packages" className="px-10 py-4 bg-white border border-slate-200 text-slate-950 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-sm">Recalibrate Plan</Link>
                                 </div>
                             </div>
                         )}

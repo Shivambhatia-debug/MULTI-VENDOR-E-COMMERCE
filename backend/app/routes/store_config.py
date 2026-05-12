@@ -102,7 +102,7 @@ async def publish_store(current_user: dict = Depends(get_current_user)):
 
     result = await db.store_configs.find_one_and_update(
         {"merchant_id": merchant_id},
-        {"$set": {"is_published": True, "updated_at": datetime.utcnow().isoformat()}},
+        {"$set": {"is_published": True, "is_approved": False, "updated_at": datetime.utcnow().isoformat()}},
         return_document=True
     )
 

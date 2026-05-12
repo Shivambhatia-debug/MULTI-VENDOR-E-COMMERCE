@@ -16,25 +16,58 @@ async def get_all_subscriptions(current_user: dict = Depends(get_current_user)):
     if current_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     db = await get_database()
+    
+    print(">>> FETCHING MERCHANT SUBSCRIPTIONS")
     merchants_users = await db.users.find({"role": "merchant"}).to_list(None)
     merchant_profiles = await db.merchants.find().to_list(None)
+    available_plans = await db.plans.find().to_list(None)
+    
+    print(f">>> FOUND {len(merchants_users)} MERCHANTS, {len(available_plans)} PLANS")
+    
     profile_map = {p.get("user_id"): p for p in merchant_profiles}
+    plan_map = {p.get("name"): p for p in available_plans}
+    
     subscriptions = []
     for m in merchants_users:
         user_id = str(m["_id"])
         profile = profile_map.get(user_id, {})
         name = profile.get("store_name") or profile.get("business_name") or m.get("name") or "Unknown Merchant"
+        
+        plan_name = m.get("plan") or profile.get("plan") or "Basic"
+        plan_details = plan_map.get(plan_name, {})
+        
         subscriptions.append({
             "merchant_id": user_id,
             "merchant_name": name,
             "merchant_email": m.get("email", "No Email"),
-            "plan": m.get("plan") or profile.get("plan") or "Basic",
+            "plan": plan_name,
+            "plan_price": plan_details.get("price", "0"),
+            "plan_features": plan_details.get("features", []),
             "status": m.get("subscription_status") or profile.get("subscription_status") or "none",
             "paid_at": str(m.get("subscription_paid_at")) if m.get("subscription_paid_at") else None,
             "trial_end": str(m.get("trial_end")) if m.get("trial_end") else None,
             "is_paid": m.get("subscription_status") == "active"
         })
     return subscriptions
+
+@router.get("/debug-info")
+@router.get("/debug-info/")
+async def get_debug_info(current_user: dict = Depends(get_current_user)):
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    db = await get_database()
+    users_count = await db.users.count_documents({})
+    merchants_count = await db.users.count_documents({"role": "merchant"})
+    profiles_count = await db.merchants.count_documents({})
+    plans_count = await db.plans.count_documents({})
+    
+    return {
+        "users_total": users_count,
+        "merchants_only": merchants_count,
+        "merchant_profiles": profiles_count,
+        "plans": plans_count,
+        "db_name": db.name
+    }
 
 @router.get("/stats")
 @router.get("/stats/")

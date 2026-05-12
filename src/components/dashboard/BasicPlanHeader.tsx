@@ -3,6 +3,7 @@
 import { AlertCircle, ArrowUpRight, CheckCircle2, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { useMerchant } from "@/context/MerchantContext";
 
 interface BasicPlanHeaderProps {
     plan: string;
@@ -12,10 +13,13 @@ interface BasicPlanHeaderProps {
 
 export default function BasicPlanHeader({ plan, productCount, branchCount }: BasicPlanHeaderProps) {
     const { t, language } = useLanguage();
+    const { isTrialActive, trialRemainingDays, subscriptionStatus } = useMerchant();
     const isRtl = language === 'ar';
-    const productLimit = 400;
-    const branchLimit = 1;
+    const productLimit = plan === "Basic" ? 400 : 1500;
+    const branchLimit = plan === "Basic" ? 1 : 3;
     const productUsage = (productCount / productLimit) * 100;
+
+    const isTrial = subscriptionStatus === "trial" && plan === "Basic";
 
     return (
         <div className="space-y-6 mb-8">
@@ -28,16 +32,32 @@ export default function BasicPlanHeader({ plan, productCount, branchCount }: Bas
                         <Sparkles size={20} className="text-slate-300" />
                     </div>
                     <div className={isRtl ? 'text-right' : ''}>
-                        <h2 className="text-xs font-black uppercase tracking-widest leading-none text-slate-100">{t("basic_plan_active")}</h2>
-                        <p className="text-[10px] text-slate-400 mt-1.5 font-medium">{t("upgrade_premium_unlock")}</p>
+                        <h2 className="text-xs font-black uppercase tracking-[0.3em] leading-none text-slate-100 italic">
+                            {isTrial ? `FREE TRIAL: ${trialRemainingDays} DAYS REMAINING` : `${plan} Infrastructure Authorized`}
+                        </h2>
+                        <p className="text-[10px] text-slate-400 mt-1.5 font-bold uppercase tracking-widest">
+                            {isTrial 
+                                ? "Initialize your store architecture during the free period." 
+                                : plan === "Mobile App" 
+                                    ? "Enterprise-grade connectivity with iOS & Android Native support."
+                                    : "Advanced marketplace protocols and expanded operational limits."}
+                        </p>
                     </div>
                 </div>
-                <Link
-                    href="/dashboard/settings"
-                    className="bg-white text-slate-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95 shadow-lg whitespace-nowrap relative z-10"
-                >
-                    {t("upgrade_now")}
-                </Link>
+                {plan === "Basic" && (
+                    <Link
+                        href="/packages"
+                        className="bg-white text-slate-950 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95 shadow-lg whitespace-nowrap relative z-10"
+                    >
+                        {t("upgrade_now")}
+                    </Link>
+                )}
+                {plan !== "Basic" && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl relative z-10 no-print">
+                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-300">Status: Optimal</span>
+                    </div>
+                )}
             </div>
 
             {/* Limits Grid */}

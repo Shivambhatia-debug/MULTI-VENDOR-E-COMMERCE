@@ -62,7 +62,7 @@ const pricingSections = [
 ];
 
 export default function Pricing() {
-    const { user, isAuthenticated, activePlan, updatePlan, refreshUser } = useMerchant();
+    const { user, isAuthenticated, activePlan, updatePlan, refreshUser, subscriptionStatus, isTrialActive } = useMerchant();
     const { t, language } = useLanguage();
     const router = useRouter();
     const [expandedSection, setExpandedSection] = useState<number | null>(null);
@@ -343,10 +343,10 @@ export default function Pricing() {
                                                 {isUpgrading === plan.name ? (
                                                     <span className="animate-pulse">Processing...</span>
                                                 ) : (
-                                                    activePlan === plan.name 
-                                                        ? t("current_plan") 
+                                                    (isAuthenticated && activePlan === plan.name)
+                                                        ? (plan.name === "Basic" && !isTrialActive && subscriptionStatus === "trial" ? "Renew Plan" : t("current_plan")) 
                                                         : plan.name === "Basic" 
-                                                            ? "Start Free Trial" 
+                                                            ? (isAuthenticated && subscriptionStatus === "trial" ? "Renew Plan" : "Start Free Trial") 
                                                             : "Buy Now"
                                                 )}
                                             </button>
