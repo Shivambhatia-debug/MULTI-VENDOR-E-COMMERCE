@@ -16,6 +16,8 @@ class OrderBase(BaseModel):
     method: str = "Online"
     tracking_id: Optional[str] = None
     delivery_estimate: Optional[str] = None
+    driver_id: Optional[str] = None
+    driver_name: Optional[str] = None
 
 class OrderCreate(OrderBase):
     merchant_id: str

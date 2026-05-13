@@ -31,39 +31,23 @@ export default function OrdersPage() {
     const [error, setError] = useState<string | null>(null);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [drivers, setDrivers] = useState<any[]>([]);
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            setIsLoading(true);
+        const fetchDrivers = async () => {
             try {
                 const token = localStorage.getItem("golalita_token");
-                if (!token) {
-                    router.push("/login");
-                    return;
-                }
-
-                const response = await fetch("/api/python/orders", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
+                const response = await fetch("/api/python/merchants/drivers", {
+                    headers: { "Authorization": `Bearer ${token}` }
                 });
-
                 if (response.ok) {
                     const data = await response.json();
-                    setOrders(data);
-                } else {
-                    console.error("FETCH_ERROR:", response.status);
-                    setError("Failed to load logistical data");
+                    setDrivers(data);
                 }
-            } catch (err) {
-                console.error("NETWORK_ERROR:", err);
-                setError("Unable to connect to order protocol");
-            } finally {
-                setIsLoading(false);
-            }
+            } catch (err) { console.error(err); }
         };
 
         fetchOrders();
+        fetchDrivers();
     }, [router]);
 
     const stats = {
@@ -136,6 +120,7 @@ export default function OrdersPage() {
                                     <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Value</th>
                                     <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mechanism</th>
                                     <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Fulfillment</th>
+                                    <th className="p-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Driver</th>
                                     <th className="p-8"></th>
                                 </tr>
                             </thead>
@@ -173,6 +158,14 @@ export default function OrdersPage() {
                                                 <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusStyle[order.status]}`}>
                                                     {order.status}
                                                 </span>
+                                            </td>
+                                            <td className="p-8">
+                                                <div className="flex items-center gap-2">
+                                                    <Truck size={14} className={order.driver_name ? "text-blue-500" : "text-slate-300"} />
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${order.driver_name ? "text-slate-900" : "text-slate-400 opacity-50"}`}>
+                                                        {order.driver_name || "Unassigned"}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="p-8 text-right">
                                                 <button 
@@ -307,6 +300,50 @@ export default function OrdersPage() {
                                             }}
                                             className="w-full bg-slate-50 border-none rounded-xl p-4 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-slate-950 transition-all"
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 pt-6 border-t border-slate-50">
+                                    <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-widest italic flex items-center gap-2">
+                                        <Truck size={14} /> Assign Logistics Officer
+                                    </h4>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Active Driver</label>
+                                        <select 
+                                            value={selectedOrder.driver_id || ""}
+                                            onChange={async (e) => {
+                                                const driverId = e.target.value;
+                                                const driverName = drivers.find(d => d.id === driverId)?.name || "";
+                                                
+                                                setIsUpdating(true);
+                                                try {
+                                                    const token = localStorage.getItem("golalita_token");
+                                                    const res = await fetch(`/api/python/orders/${selectedOrder.id}`, {
+                                                        method: "PATCH",
+                                                        headers: { 
+                                                            "Authorization": `Bearer ${token}`,
+                                                            "Content-Type": "application/json"
+                                                        },
+                                                        body: JSON.stringify({ 
+                                                            driver_id: driverId,
+                                                            driver_name: driverName
+                                                        })
+                                                    });
+                                                    if (res.ok) {
+                                                        const updated = await res.json();
+                                                        setOrders(orders.map(o => o.id === updated.id ? updated : o));
+                                                        setSelectedOrder(updated);
+                                                    }
+                                                } catch (err) { console.error(err); } finally { setIsUpdating(false); }
+                                            }}
+                                            className="w-full bg-slate-950 text-white rounded-2xl p-5 text-[10px] font-black uppercase tracking-[0.2em] outline-none focus:ring-4 focus:ring-slate-950/20 transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="">No Driver Assigned</option>
+                                            {drivers.map(driver => (
+                                                <option key={driver.id} value={driver.id}>{driver.name} ({driver.vehicle})</option>
+                                            ))}
+                                        </select>
+                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-2 ml-1">Assignment will notify the driver terminal immediately</p>
                                     </div>
                                 </div>
                             </div>

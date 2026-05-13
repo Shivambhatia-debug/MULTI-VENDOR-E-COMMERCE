@@ -60,7 +60,7 @@ async def update_order_status(id: str, status: str, current_user: dict = Depends
 async def update_order(id: str, updates: dict, current_user: dict = Depends(get_current_user)):
     db = await get_database()
     # Ensure only valid fields are updated
-    valid_fields = ["status", "tracking_id", "delivery_estimate", "shipping_address", "city", "zip_code"]
+    valid_fields = ["status", "tracking_id", "delivery_estimate", "shipping_address", "city", "zip_code", "driver_id", "driver_name"]
     update_data = {k: v for k, v in updates.items() if k in valid_fields}
     
     result = await db.orders.find_one_and_update(

@@ -2,6 +2,12 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict
 from datetime import datetime
 
+class MobileConfig(BaseModel):
+    primary_color: str = "#2563EB"
+    accent_color: str = "#0F172A"
+    logo_url: Optional[str] = None
+    notifications_enabled: bool = True
+
 class StoreConfigBase(BaseModel):
     store_name: str = "My Store"
     logo_url: Optional[str] = None
@@ -31,6 +37,7 @@ class StoreConfigBase(BaseModel):
     is_published: bool = False
     is_approved: bool = False
     hero_library: List[str] = []
+    mobile_config: MobileConfig = MobileConfig()
 
 class StoreConfigUpdate(StoreConfigBase):
     pass

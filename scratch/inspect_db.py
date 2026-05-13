@@ -1,36 +1,32 @@
 import asyncio
-import os
 from motor.motor_asyncio import AsyncIOMotorClient
+import os
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path="backend/.env")
+# Path to backend/.env
+load_dotenv(dotenv_path='backend/.env')
 
-async def check_db():
-    client = AsyncIOMotorClient(os.getenv("MONGODB_URL"))
-    db = client[os.getenv("DATABASE_NAME")]
+async def main():
+    mongo_url = os.getenv("MONGODB_URL")
+    db_name = os.getenv("DATABASE_NAME", "shivambhatia")
     
-    print(f"Checking database: {os.getenv('DATABASE_NAME')}")
-    
-    # Check users and roles
-    roles_count = await db.users.aggregate([
-        {"$group": {"_id": "$role", "count": {"$sum": 1}}}
-    ]).to_list(None)
-    
-    print("\nUser Roles:")
-    for r in roles_count:
-        print(f"  {r['_id']}: {r['count']}")
-        
-    # Check stores
-    stores_count = await db.stores.count_documents({})
-    print(f"\nTotal Stores: {stores_count}")
-    
-    # List some users
-    users = await db.users.find({}).limit(5).to_list(None)
-    print("\nSample Users:")
-    for u in users:
-        print(f"  {u.get('email')} - {u.get('role')}")
+    if not mongo_url:
+        print("Error: MONGODB_URL not found in .env")
+        return
 
-    client.close()
+    print(f"Connecting to {db_name}...")
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[db_name]
+    
+    collections = await db.list_collection_names()
+    print("Collections:", collections)
+    
+    for coll_name in collections:
+        count = await db[coll_name].count_documents({})
+        print(f"{coll_name}: {count} documents")
+        if count > 0:
+            doc = await db[coll_name].find_one()
+            print(f"  Sample {coll_name}: {doc.keys()}")
 
 if __name__ == "__main__":
-    asyncio.run(check_db())
+    asyncio.run(main())
