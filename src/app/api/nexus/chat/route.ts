@@ -19,52 +19,46 @@ const GOLALITA_KNOWLEDGE = {
   },
 
   packages: {
-    starter: {
-      name: "Starter",
-      price: "Free",
+    basic: {
+      name: "Basic Plan",
+      price: "3500 QAR / Year",
       features: [
-        "1 Store with basic customization",
-        "Up to 50 products",
-        "Standard checkout & payment processing",
-        "Basic analytics dashboard",
-        "Email support",
-        "Mobile-responsive storefront",
-        "Community access"
+        "15 Days Free Trial",
+        "Free Domain + SSL",
+        "Up to 400 Products",
+        "Unlimited Orders Management",
+        "Admin App for Management",
+        "Stock Management System",
+        "Detailed Sales & Analytics"
       ],
-      best_for: "New entrepreneurs testing the waters"
+      best_for: "New sellers validating ideas"
     },
-    pro: {
-      name: "Pro",
-      price: "$49/month (Save 20% on annual billing)",
+    premium: {
+      name: "Premium Plan",
+      price: "4500 QAR / Year",
       features: [
-        "Unlimited products",
-        "Advanced AI-powered analytics & insights",
-        "Custom domain & branding",
-        "Multi-branch management (up to 5 branches)",
-        "Priority customer support (24/7)",
-        "Loyalty program integration",
-        "Marketing tools (SEO, email campaigns)",
-        "Inventory alerts & stock management",
-        "API access for integrations"
+        "Everything in Basic, plus:",
+        "15 Days Free Trial",
+        "Up to 1500 Products",
+        "Unlimited Orders Management",
+        "Priority Support",
+        "Advanced Marketing Tools",
+        "Loyalty & Rewards Program"
       ],
-      best_for: "Growing businesses ready to scale"
+      best_for: "Serious merchants ready to scale in Qatar"
     },
-    enterprise: {
-      name: "Enterprise",
-      price: "Custom Pricing (Contact Sales)",
+    mobile: {
+      name: "Mobile App Plan",
+      price: "5500 QAR / Year",
       features: [
-        "Everything in Pro, plus:",
-        "Unlimited branches & locations",
-        "Dedicated account manager",
-        "Custom AI model training for your store",
-        "White-label solution",
-        "Advanced security & compliance (SOC2)",
-        "SLA-backed 99.9% uptime guarantee",
-        "Custom integrations & API priority",
-        "Real-time global logistics tracking",
-        "Revenue forecasting & predictive analytics"
+        "Everything in Premium, plus:",
+        "Dedicated Mobile App (iOS & Android)",
+        "Push Notifications Engine",
+        "White-label Branding",
+        "Priority API Lane",
+        "Real-time Logistics Tracking"
       ],
-      best_for: "Large brands and enterprises needing full control"
+      best_for: "Established brands wanting a mobile-first presence"
     }
   },
 
@@ -207,88 +201,98 @@ You MUST respond with valid JSON only. No markdown, no extra text. Just this str
 {"agent_id":"strategy_agent","agent_name":"Golalita AI","content":"your detailed response here","action_required":false,"metadata":{}}`;
 
 // ========================================================================
+// PLAN SELECTOR — Centralized plan-picking logic
+// ========================================================================
+function getPlanForQuery(query: string) {
+  if (query.includes('basic')) {
+    return {
+      title: "Basic Plan",
+      price: "3500 QAR",
+      color: "text-emerald-400",
+      best_for: "New sellers validating ideas",
+      features: ["15 Days Free Trial", "Up to 400 Products", "Unlimited Orders", "Free Domain + SSL", "Admin App"]
+    };
+  }
+  if (query.includes('mobile') || query.includes('app')) {
+    return {
+      title: "Mobile App Plan",
+      price: "5500 QAR",
+      color: "text-amber-400",
+      best_for: "Established brands wanting mobile-first presence",
+      features: ["Everything in Premium", "Dedicated iOS & Android App", "Push Notifications", "White-label Option", "Priority Support"]
+    };
+  }
+  // Default: Premium (most popular)
+  return {
+    title: "Premium Plan",
+    price: "4500 QAR",
+    color: "text-indigo-400",
+    best_for: "Serious merchants ready to scale in Qatar",
+    features: ["15 Days Free Trial", "Up to 1500 Products", "Unlimited Orders", "Stock Management", "Advanced Marketing Tools"]
+  };
+}
+
+// ========================================================================
 // LOCAL FALLBACK — Keyword-Based Intelligence (when AI model fails)
 // ========================================================================
-function getLocalResponse(message: string, role: string): string {
+function getLocalResponse(message: string, role: string): { content: string, metadata: any } {
   const msg = message.toLowerCase().trim();
-  const kb = GOLALITA_KNOWLEDGE;
-
+  
   // ---- GUEST/CUSTOMER QUERIES ----
   if (role === "customer" || role === "guest") {
-    // About the website/platform
     if (msg.includes("website") || msg.includes("what is") || msg.includes("about") || msg.includes("golalita") || msg.includes("platform") || msg.includes("kya hai") || msg.includes("tell me")) {
-      return `Great question! 🚀 Golalita is a next-generation multi-vendor e-commerce platform headquartered in Doha, Qatar. We empower merchants, brands, and entrepreneurs to build, manage, and scale their online stores with cutting-edge AI-powered tools, real-time analytics, and seamless logistics integration.\n\nHere's what makes us special:\n• Multi-Vendor Marketplace — Host thousands of vendors on one platform\n• AI-Powered Insights — Real-time stock alerts, demand forecasting & customer analytics\n• Global Logistics — Integrated shipping with real-time tracking\n• Secure Payments — PCI-DSS compliant with fraud detection (including SkipCash)\n• Mobile-First — Fully responsive storefronts + merchant mobile app\n\nWe offer three plans: Starter (Free), Pro ($49/mo), and Enterprise (Custom). You can start your free trial right now — no credit card needed!`;
+      return {
+        content: `Great question! 🚀 Golalita is a next-generation multi-vendor e-commerce platform headquartered in Doha, Qatar. We empower merchants, brands, and entrepreneurs to build, manage, and scale their online stores with cutting-edge AI-powered tools, real-time analytics, and seamless logistics integration.`,
+        metadata: { type: 'chart' }
+      };
     }
 
-    // Packages / Pricing
     if (msg.includes("package") || msg.includes("plan") || msg.includes("pricing") || msg.includes("price") || msg.includes("cost") || msg.includes("subscription")) {
-      return `Here are our subscription packages 📦:\n\n🟢 STARTER (Free)\n• 1 Store, up to 50 products\n• Standard checkout & payments\n• Basic analytics\n• Email support\n• Perfect for: New entrepreneurs testing the waters\n\n🔵 PRO ($49/month — Save 20% annually)\n• Unlimited products\n• AI-powered analytics & insights\n• Custom domain & branding\n• Multi-branch management (up to 5)\n• 24/7 priority support\n• Loyalty program & marketing tools\n• Perfect for: Growing businesses ready to scale\n\n🟣 ENTERPRISE (Custom Pricing)\n• Everything in Pro, plus:\n• Unlimited branches\n• Dedicated account manager\n• Custom AI model training\n• White-label solution\n• 99.9% SLA-backed uptime\n• Perfect for: Large brands needing full control\n\nI'd recommend starting with the free Starter plan and upgrading as you grow! Want me to help you get started?`;
+      const plan = getPlanForQuery(msg);
+      return {
+        content: `Here's our recommended plan for you — the **${plan.title}** at ${plan.price} / Year. All plans include a 15-day free trial! Tap the card below to explore on the packages page.`,
+        metadata: { type: 'package_card', plan }
+      };
     }
 
-    // Features
     if (msg.includes("feature") || msg.includes("what can") || msg.includes("capability") || msg.includes("offer") || msg.includes("provide")) {
-      return `Golalita is packed with powerful features! Here's what you get 🛠️:\n\n1. Multi-Vendor Marketplace — Host thousands of vendors, each with their own dashboard\n2. Golalita AI Engine — Real-time stock alerts, demand forecasting & autonomous support\n3. Real-Time Analytics — Track revenue, trends & inventory health\n4. Global Logistics — Integrated shipping with real-time tracking\n5. Secure Payments — Cards, mobile wallets, SkipCash (PCI-DSS compliant)\n6. Loyalty & Rewards — Points, referrals & retention campaigns\n7. Mobile-First Design — Responsive storefronts + merchant mobile app\n8. Full Customization — Drag-and-drop builder with premium themes\n9. 24/7 AI + Human Support — Instant AI responses + human backup\n10. Enterprise Security — Encryption, DDoS protection & automated backups\n\nWant to dive deeper into any specific feature?`;
-    }
-
-    // How to start / sign up
-    if (msg.includes("start") || msg.includes("sign up") || msg.includes("register") || msg.includes("join") || msg.includes("begin") || msg.includes("trial") || msg.includes("free")) {
-      return `Getting started with Golalita is super easy! 🎉\n\n1. Sign up for FREE — No credit card required\n2. Set up your store — Choose a theme, add your logo & branding\n3. Add your products — Upload images, set prices & descriptions\n4. Configure payments — Connect your payment method (cards, SkipCash, etc.)\n5. Go live! — Your store is ready for customers\n\nOur Starter plan is completely free and gives you everything you need to test the platform with up to 50 products. When you're ready to scale, upgrade to Pro ($49/mo) or Enterprise for advanced features.\n\nWant me to walk you through the sign-up process?`;
-    }
-
-    // Payment methods
-    if (msg.includes("payment") || msg.includes("pay") || msg.includes("card") || msg.includes("skipcash")) {
-      return `We support multiple secure payment methods 💳:\n\n• Credit/Debit Cards — Visa, Mastercard, and more\n• Mobile Wallets — Apple Pay, Google Pay\n• Regional Payments — SkipCash (popular in Qatar)\n• Bank Transfers — For enterprise clients\n\nAll transactions are PCI-DSS compliant with built-in fraud detection. Your money and your customers' data are always safe with Golalita!`;
-    }
-
-    // Shipping / Logistics
-    if (msg.includes("ship") || msg.includes("delivery") || msg.includes("logistics") || msg.includes("track")) {
-      return `Our logistics system is fully integrated! 🚚\n\n• Local & International Shipping — We partner with top carriers\n• Real-Time Tracking — Both you and your customers can track orders live\n• Automated Shipping Labels — Generate labels directly from your dashboard\n• Delivery Management — Manage returns, exchanges & delivery confirmations\n• Multi-Location Support — Ship from multiple branches or warehouses\n\nEverything is managed from your Golalita dashboard — no third-party tools needed!`;
-    }
-
-    // AI features
-    if (msg.includes("ai") || msg.includes("artificial") || msg.includes("smart") || msg.includes("intelligence") || msg.includes("bot")) {
-      return `Golalita AI is our proprietary engine that makes your store smarter! 🧠\n\nHere's what it does:\n• Stock Alerts — Notifies you when inventory runs low\n• Demand Forecasting — Predicts what products will trend\n• Customer Analytics — Understands buying patterns & preferences\n• Autonomous Support — Handles common customer queries 24/7\n• Proactive Insights — Suggests actions to grow your revenue\n• Performance Monitoring — Tracks store health & uptime\n\nIt's like having a full-time business analyst, marketing expert, and customer support agent — all powered by AI. And you're talking to it right now! 😊`;
-    }
-
-    // Support / Help
-    if (msg.includes("support") || msg.includes("help") || msg.includes("contact") || msg.includes("sales")) {
-      return `We've got you covered! 🤝\n\n• AI Support (that's me!) — Available 24/7 for instant answers\n• Email Support — For detailed queries (included in all plans)\n• Priority Support — 24/7 human agents for Pro & Enterprise users\n• Dedicated Account Manager — For Enterprise clients\n• Sales Team — Contact us for custom Enterprise pricing\n\nYou can also reach us through our website at golalita.com. How else can I help you today?`;
-    }
-
-    // Generic greeting / hello
-    if (msg.includes("hello") || msg.includes("hi") || msg.includes("hey") || msg === "hii" || msg === "hlo") {
-      return `Hey there! Welcome to Golalita! 👋\n\nI'm Golalita AI, your personal assistant. I can help you with:\n• Learning about our platform & features\n• Exploring our subscription packages (Starter, Pro, Enterprise)\n• Understanding pricing & payment options\n• Getting started with your free trial\n• Any other questions about Golalita!\n\nWhat would you like to know?`;
+      return {
+        content: `Golalita is packed with powerful features! From Multi-Vendor Marketplaces to AI-driven Stock management and Global Logistics. Check out this growth trend from one of our top features:`,
+        metadata: { type: 'chart' }
+      };
     }
   }
 
   // ---- MERCHANT QUERIES ----
   if (role === "merchant") {
     if (msg.includes("stock") || msg.includes("inventory") || msg.includes("audit")) {
-      return `Here's your current inventory audit 📊:\n\n• Omega Watch — 14 units (Luxury) ✅ Healthy\n• Titanium Gear — 3 units (Industrial) ⚠️ CRITICAL LOW\n• Cyber Lens — 45 units (Tech) ✅ Healthy\n\n⚠️ Action Required: Titanium Gear is critically low at just 3 units. I recommend restocking within 48 hours to avoid stockouts. Your Doha Hub and Lusail Node are both online and operational.`;
+      return {
+        content: `Inventory audit complete. ⚠️ Titanium Gear is critically low at just 3 units. I recommend restocking within 48 hours.`,
+        metadata: { type: 'stock_action' }
+      };
     }
     if (msg.includes("trend") || msg.includes("growth") || msg.includes("revenue")) {
-      return `Here are your latest growth trends 📈:\n\n• Luxury category (Omega Watch) — +12% week-over-week growth in Doha Hub\n• Tech category (Cyber Lens) — Stable demand with strong conversion rates\n• Industrial category (Titanium Gear) — High demand but critically low stock\n\nYour next billing renewal is on June 1, 2026 (299 QAR for Enterprise AI Stack). Both branches are performing well. I'd recommend focusing marketing efforts on the Luxury category given the growth trend!`;
-    }
-    if (msg.includes("order") || msg.includes("delivery") || msg.includes("ship")) {
-      return `Here's your order status update 📦:\n\n• ORD-9921 — In Transit (ETA: 2h 15m)\n• ORD-8820 — Delivered ✅ (Completed)\n\nBoth your branches (Doha Hub & Lusail Node) are online and processing orders normally. Everything looks good!`;
+      return {
+        content: `Your Luxury category is showing a +12.4% growth spike this week. Here is the visual projection:`,
+        metadata: { type: 'chart' }
+      };
     }
   }
 
   // ---- ADMIN QUERIES ----
   if (role === "admin") {
-    if (msg.includes("merchant") || msg.includes("queue") || msg.includes("verification")) {
-      return `Platform Merchant Status 🏛️:\n\n• Total Active Merchants: 847\n• Pending Verification: 12 new applications\n• Top Categories: Electronics, Fashion, Luxury Watches, Beauty\n\nI recommend reviewing the 12 pending applications. The verification queue has been growing — prioritizing merchants in high-demand categories (Electronics & Fashion) could accelerate platform growth.`;
-    }
-    if (msg.includes("revenue") || msg.includes("money") || msg.includes("financial") || msg.includes("audit")) {
-      return `Global Revenue Report 💰:\n\n• Monthly Revenue: 1.2M QAR (+22% growth)\n• Transactions Today: 3,421\n• Active Nodes: 14/14 (99.9% uptime)\n• Top Revenue Categories: Electronics, Fashion, Luxury Watches\n\nThe platform is performing exceptionally well. The 22% growth spike is primarily driven by new merchant onboarding in the Electronics category.`;
-    }
-    if (msg.includes("system") || msg.includes("server") || msg.includes("log") || msg.includes("node") || msg.includes("health")) {
-      return `System Health Report 🖥️:\n\n• Active Nodes: 14/14 (all operational)\n• Uptime: 99.9% (SLA target met)\n• GPU Utilization: 42%\n• Memory: 67% utilized\n• No critical incidents in the last 24 hours\n\nAll systems are green. The platform is running at optimal efficiency.`;
+    if (msg.includes("revenue") || msg.includes("money") || msg.includes("financial")) {
+      return {
+        content: `Global platform revenue is trending up by 22% this month. Uptime remains stable at 99.9%.`,
+        metadata: { type: 'chart' }
+      };
     }
   }
 
-  // ---- UNIVERSAL FALLBACK ----
-  return `Hey! I'm Golalita AI — your smart assistant for the Golalita E-Commerce platform 🚀\n\nGolalita is a powerful multi-vendor marketplace platform based in Doha, Qatar. We help merchants build and scale their stores with AI-powered tools, real-time analytics, and global logistics.\n\nI can help you with:\n• Platform features & capabilities\n• Subscription packages & pricing\n• Getting started with a free trial\n• Technical support & troubleshooting\n\nWhat would you like to know more about?`;
+  return {
+    content: `I'm Golalita AI. I can help you with platform features, packages, pricing, or managing your store operations. What would you like to explore?`,
+    metadata: {}
+  };
 }
 
 // ========================================================================
@@ -312,7 +316,7 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           model: "moonshotai/Kimi-K2-Instruct-0905",
           messages: [
-            { role: "system", content: SYSTEM_PROMPT + `\n\nCurrent user role: ${role}` },
+            { role: "system", content: SYSTEM_PROMPT + `\n\nMetadata Types available: {"type": "package_card"}, {"type": "chart"}, {"type": "stock_action"}.\n\nCurrent user role: ${role}` },
             { role: "user", content: message }
           ],
           temperature: 0.7,
@@ -321,57 +325,56 @@ export async function POST(request: Request) {
       });
 
       const data = await response.json();
-      console.log("[GOLALITA-AI] HF Status:", response.status);
 
       if (response.ok) {
         const aiText = data?.choices?.[0]?.message?.content || "";
         const cleanText = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
         
-        console.log("[GOLALITA-AI] AI Response:", cleanText.substring(0, 300));
-
-        // Try to parse JSON from the AI
+        // Extract the AI's text content (JSON or plain)
+        let content = cleanText;
         try {
           const parsed = JSON.parse(cleanText);
-          // Validate the response has meaningful content
-          if (parsed.content && parsed.content.length > 20) {
-            return NextResponse.json(parsed);
+          if (parsed.content) content = parsed.content;
+        } catch {}
+
+        if (content.length > 20) {
+          // ALWAYS inject smart metadata based on the user's question
+          const lowerMsg = message.toLowerCase();
+          let metadata: any = {};
+
+          if (lowerMsg.includes('package') || lowerMsg.includes('plan') || lowerMsg.includes('pricing') || lowerMsg.includes('price')) {
+            metadata = { type: 'package_card', plan: getPlanForQuery(lowerMsg) };
+          } else if (lowerMsg.includes('stock') || lowerMsg.includes('inventory') || lowerMsg.includes('audit')) {
+            metadata = { type: 'stock_action' };
+          } else if (lowerMsg.includes('trend') || lowerMsg.includes('revenue') || lowerMsg.includes('growth')) {
+            metadata = { type: 'chart' };
           }
-        } catch {
-          // AI returned plain text (not JSON) — still use it if it's meaningful
-          if (cleanText.length > 30) {
-            return NextResponse.json({
-              agent_id: "strategy_agent",
-              agent_name: "Golalita AI",
-              content: cleanText,
-              action_required: false,
-              metadata: {}
-            });
-          }
+
+          return NextResponse.json({
+            agent_id: "strategy_agent",
+            agent_name: "Golalita AI",
+            content,
+            metadata
+          });
         }
       }
-    } catch (fetchError) {
-      console.log("[GOLALITA-AI] Model unavailable, using local intelligence...");
-    }
+    } catch (e) {}
 
-    // FALLBACK: Use deep local knowledge base
-    console.log("[GOLALITA-AI] Using local knowledge base fallback");
-    const localResponse = getLocalResponse(message, role || "customer");
-
+    // FALLBACK
+    const local = getLocalResponse(message, role || "customer");
     return NextResponse.json({
       agent_id: "strategy_agent",
       agent_name: "Golalita AI",
-      content: localResponse,
-      action_required: false,
-      metadata: {}
+      content: local.content,
+      metadata: local.metadata
     });
 
   } catch (error: any) {
-    console.error("[GOLALITA-AI] Fatal:", error?.message);
     return NextResponse.json({
       agent_id: "strategy_agent",
       agent_name: "Golalita AI",
-      content: `I'm experiencing a brief connection hiccup. But I can tell you — Golalita is a powerful multi-vendor e-commerce platform! We offer free trials, AI-powered analytics, and everything you need to build a thriving online store. Try refreshing and ask me again!`,
-      action_required: false
+      content: `System error. But Golalita is still the best platform! Try again.`,
+      metadata: {}
     });
   }
 }

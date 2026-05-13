@@ -27,6 +27,140 @@ import { useMerchant } from "@/context/MerchantContext";
 
 const AI_LOGO = "/web background/web background/logo 3 png.png";
 
+// --- Neural Background Component ---
+const NeuralBackground = () => {
+    const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+    React.useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let particles: any[] = [];
+        const particleCount = 40;
+
+        const resize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+
+        class Particle {
+            x: number; y: number; vx: number; vy: number; size: number;
+            constructor() {
+                this.x = Math.random() * canvas!.width;
+                this.y = Math.random() * canvas!.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
+            }
+        }
+
+        const init = () => {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+        };
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+            ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
+            
+            particles.forEach((p, i) => {
+                p.update();
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        ctx.lineWidth = 1 - dist / 150;
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animate);
+        };
+
+        window.addEventListener('resize', resize);
+        resize();
+        init();
+        animate();
+        return () => window.removeEventListener('resize', resize);
+    }, []);
+
+    return <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none opacity-40" />;
+};
+
+// --- Actionable Cards ---
+const MiniChart = ({ data, color }: { data: number[], color: string }) => (
+    <div className="mt-4 p-4 bg-white/[0.03] border border-white/5 rounded-xl">
+        <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Real-Time Trend</span>
+            <span className={`text-[10px] font-bold ${color}`}>+12.4%</span>
+        </div>
+        <div className="h-12 flex items-end gap-1">
+            {data.map((v, i) => (
+                <div key={i} className={`flex-1 ${color.replace('text', 'bg')} opacity-40 rounded-t-sm`} style={{ height: `${v}%` }}></div>
+            ))}
+        </div>
+    </div>
+);
+
+const PackageCard = ({ title, price, features, color, best_for }: any) => (
+    <div className={`mt-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-2xl backdrop-blur-xl relative overflow-hidden group`}>
+        <div className="absolute top-0 right-0 p-4">
+            <div className={`px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest bg-white/5 ${color} border border-white/5`}>
+                {title === "Premium Plan" ? "Popular" : "Active"}
+            </div>
+        </div>
+        
+        <div className="mb-6">
+            <h4 className="text-sm font-black text-white uppercase tracking-widest mb-1">{title}</h4>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest italic mb-4">{best_for || 'Optimized for growth'}</p>
+            <div className="flex items-baseline gap-1">
+                <span className={`text-2xl font-black ${color}`}>{price}</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase">/ year</span>
+            </div>
+        </div>
+
+        <div className="space-y-3 mb-6">
+            {features.map((f: string, i: number) => (
+                <div key={i} className="flex items-center gap-3 text-[11px] text-slate-400 font-medium">
+                    <div className={`h-1.5 w-1.5 rounded-full ${color.replace('text', 'bg')} shadow-[0_0_8px] shadow-indigo-500/50`}></div>
+                    {f}
+                </div>
+            ))}
+        </div>
+
+        <button 
+            onClick={() => window.location.href = '/#pricing'}
+            className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-white transition-all hover:scale-[1.02] active:scale-95 ${color.replace('text', 'bg')} shadow-lg shadow-indigo-500/40 group-hover:brightness-110 flex items-center justify-center gap-2 mb-3`}
+        >
+            Start Free Trial <ArrowRight size={14} />
+        </button>
+        <button 
+            onClick={() => window.location.href = '/#pricing'}
+            className="w-full py-2 text-[9px] font-bold uppercase tracking-widest text-slate-500 hover:text-indigo-400 transition-all flex items-center justify-center gap-1"
+        >
+            View All Plans →
+        </button>
+    </div>
+);
+
 const agents = [
     { id: 'billing', name: 'Billing Agent', status: 'Active', icon: Settings, color: 'text-blue-500' },
     { id: 'tech', name: 'Systems Agent', status: 'Analyzing', icon: Terminal, color: 'text-emerald-500' },
@@ -188,7 +322,9 @@ export default function Support() {
     };
 
     return (
-        <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 overflow-hidden relative">
+            <NeuralBackground />
+            
             {/* Cleaner Header */}
             <header className="border-b border-white/5 bg-[#020617]/80 backdrop-blur-xl py-4 px-10 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-4">
@@ -214,9 +350,9 @@ export default function Support() {
                 </div>
             </header>
 
-            <main className="flex-1 flex overflow-hidden">
+            <main className="flex-1 flex overflow-hidden relative z-10">
                 {/* Simplified Sidebar */}
-                <aside className="w-72 border-r border-white/5 bg-black/20 p-8 hidden lg:flex flex-col gap-10">
+                <aside className="w-72 border-r border-white/5 bg-[#020617]/50 backdrop-blur-2xl p-8 hidden lg:flex flex-col gap-10">
                     <div>
                         <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-6 flex items-center gap-2">
                             {role === "admin" ? "Global Metrics" : (role === "merchant" ? "Insights" : "Platform Features")}
@@ -243,7 +379,7 @@ export default function Support() {
                                 </div>
                                 <p className="text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-widest italic">42% GPU Cycles</p>
                             </>
-                        ) : role === "merchant" ? (
+                        ) : (role === "merchant" ? (
                             <>
                                 <h3 className="text-xs font-bold mb-2 text-slate-300">Protocol Health</h3>
                                 <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
@@ -259,14 +395,12 @@ export default function Support() {
                                     View Packages <ArrowRight size={12} />
                                 </button>
                             </>
-                        )}
+                        ))}
                     </div>
                 </aside>
 
                 {/* Refined Terminal Area */}
-                <section className="flex-1 flex flex-col relative bg-gradient-to-b from-[#020617] to-black">
-                    <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03] pointer-events-none"></div>
-                    
+                <section className="flex-1 flex flex-col relative bg-transparent">
                     <div 
                         ref={scrollRef}
                         className="flex-1 overflow-y-auto p-10 space-y-10 relative z-10"
@@ -282,15 +416,36 @@ export default function Support() {
                                             <msg.icon size={18} className={msg.textColor || "text-white"} />
                                         </div>
                                     )}
-                                    <div className={`${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white/[0.02] border border-white/5 text-slate-200'} p-6 rounded-2xl ${msg.role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none shadow-sm backdrop-blur-sm'}`}>
+                                    <div className={`${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white/[0.04] border border-white/5 text-slate-200'} p-6 rounded-2xl ${msg.role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none shadow-sm backdrop-blur-sm'}`}>
                                         {msg.agent_name && (
                                             <div className="flex items-center gap-3 mb-2">
                                                 <span className={`text-[9px] font-bold uppercase tracking-[0.2em] ${msg.textColor || 'text-slate-500'}`}>{msg.agent_name}</span>
                                             </div>
                                         )}
-                                        <p className="text-sm font-medium leading-relaxed tracking-tight">
+                                        <div className="text-sm font-medium leading-relaxed tracking-tight whitespace-pre-line">
                                             {msg.content}
-                                        </p>
+                                        </div>
+
+                                        {/* Actionable Components */}
+                                        {msg.metadata?.type === 'package_card' && (
+                                            <div className="grid grid-cols-1 gap-4 mt-2">
+                                                <PackageCard 
+                                                    title={msg.metadata.plan?.title || "Premium Plan"}
+                                                    price={msg.metadata.plan?.price || "4500 QAR"}
+                                                    color={msg.metadata.plan?.color || "text-indigo-400"}
+                                                    best_for={msg.metadata.plan?.best_for || "Serious merchants ready to scale"}
+                                                    features={msg.metadata.plan?.features || ["15 Days Free Trial", "Up to 1500 Products", "Unlimited Orders", "Stock Management"]} 
+                                                />
+                                            </div>
+                                        )}
+                                        {msg.metadata?.type === 'chart' && (
+                                            <MiniChart data={[20, 45, 30, 80, 60, 90, 75]} color={msg.textColor || 'text-indigo-400'} />
+                                        )}
+                                        {msg.metadata?.type === 'stock_action' && (
+                                            <button className="mt-4 w-full py-3 bg-rose-500/20 border border-rose-500/30 text-rose-400 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-rose-500/30 transition-all">
+                                                Initialize Restock Protocol
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -298,20 +453,20 @@ export default function Support() {
                         
                         {isThinking && (
                             <div className="flex justify-start">
-                                <div className="bg-white/5 border border-white/5 px-5 py-3 rounded-2xl rounded-tl-none flex items-center gap-3">
+                                <div className="bg-white/5 border border-white/5 px-5 py-3 rounded-2xl rounded-tl-none flex items-center gap-3 backdrop-blur-md">
                                     <div className="flex gap-1">
                                         <div className="h-1 w-1 rounded-full bg-indigo-400 animate-bounce"></div>
                                         <div className="h-1 w-1 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]"></div>
                                         <div className="h-1 w-1 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]"></div>
                                     </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Processing</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Syncing Neurons</span>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Simpler Control Area */}
-                    <div className="p-10 bg-[#020617]/50 border-t border-white/5 backdrop-blur-3xl relative z-20">
+                    {/* Controls */}
+                    <div className="p-10 bg-[#020617]/80 border-t border-white/5 backdrop-blur-3xl relative z-20">
                         <div className="flex flex-wrap gap-2 mb-6">
                             {role === "admin" ? (
                                 ["Merchant Queue", "Global Revenue", "System Logs", "Revenue Audit"].map((btn) => (
@@ -323,7 +478,7 @@ export default function Support() {
                                         {btn}
                                     </button>
                                 ))
-                            ) : role === "merchant" ? (
+                            ) : (role === "merchant" ? (
                                 ["Audits", "Trends", "Stocks", "Support"].map((btn) => (
                                     <button 
                                         key={btn}
@@ -343,11 +498,11 @@ export default function Support() {
                                         {btn}
                                     </button>
                                 ))
-                            )}
+                            ))}
                         </div>
                         
                         <div className="relative">
-                            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-1 flex items-center gap-2 focus-within:border-indigo-500/50 transition-all">
+                            <div className="bg-white/[0.04] border border-white/5 rounded-xl p-1 flex items-center gap-2 focus-within:border-indigo-500/50 transition-all backdrop-blur-md shadow-2xl">
                                 <input 
                                     value={command}
                                     onChange={(e) => setCommand(e.target.value)}
