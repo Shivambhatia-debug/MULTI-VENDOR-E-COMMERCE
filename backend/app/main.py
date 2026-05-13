@@ -8,6 +8,14 @@ from app.routes.store_config import router as store_config_router
 from app.routes.skipcash import router as skipcash_router
 from app.routes.subscriptions import router as subscriptions_router
 from app.routes.public import router as public_router
+from app.routes.nexus_ai import router as nexus_ai_router
+from pydantic import BaseModel
+from typing import Optional
+
+class NexusChatRequest(BaseModel):
+    message: str
+    role: Optional[str] = "customer"
+    merchant_id: Optional[str] = None
 
 app = FastAPI(title="Golalita E-Commerce API")
 
@@ -48,6 +56,7 @@ app.include_router(user_actions.router)
 app.include_router(skipcash_router)
 app.include_router(subscriptions_router)
 app.include_router(public_router, prefix="/api/public")
+app.include_router(nexus_ai_router)
 
 @app.on_event("startup")
 async def startup_event():
@@ -75,6 +84,17 @@ async def root():
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
+
+@app.post("/api/nexus/autonomous-nexus")
+async def nexus_chat_direct(request: NexusChatRequest):
+    print(f"!!! DIRECT NEXUS HIT !!! Role: {request.role}, Msg: {request.message}")
+    # Simple direct logic for testing
+    return {
+        "agent_id": "strategy_agent",
+        "agent_name": "Nexus Direct",
+        "content": f"Direct Protocol Initialized. Identity: {request.role.upper()}. Database connection stable. How can I assist?",
+        "metadata": {"direct_mode": True}
+    }
 
 @app.get("/api/admin/test-route")
 async def test_route():
