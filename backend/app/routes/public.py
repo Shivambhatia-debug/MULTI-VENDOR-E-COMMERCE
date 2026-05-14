@@ -7,7 +7,9 @@ from typing import List, Optional
 router = APIRouter()
 
 @router.get("/lookup-store/{identifier}")
+@router.get("/lookup-store/{identifier}/")
 async def lookup_store(identifier: str, db = Depends(get_database)):
+    identifier = identifier.strip('/')
     # 1. Try looking up in store_configs first (Custom Domain or Subdomain)
     config = await db.store_configs.find_one({
         "$or": [
