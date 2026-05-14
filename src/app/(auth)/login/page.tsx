@@ -50,7 +50,10 @@ export default function LoginPage() {
                 }
             });
 
-            if (!userResponse.ok) throw new Error('Failed to fetch user profile');
+            if (!userResponse.ok) {
+                const errorData = await userResponse.json();
+                throw new Error(errorData.detail || 'Failed to fetch user profile');
+            }
             const userData = await userResponse.json();
 
             contextLogin(access_token, userData);

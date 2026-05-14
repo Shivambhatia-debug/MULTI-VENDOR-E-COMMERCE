@@ -32,6 +32,25 @@ export default function OrdersPage() {
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [isUpdating, setIsUpdating] = useState(false);
     const [drivers, setDrivers] = useState<any[]>([]);
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                setIsLoading(true);
+                const token = localStorage.getItem("golalita_token");
+                const response = await fetch("/api/python/merchants/orders", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setOrders(data);
+                }
+            } catch (err) {
+                setError("Failed to fetch orders");
+                console.error(err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
         const fetchDrivers = async () => {
             try {

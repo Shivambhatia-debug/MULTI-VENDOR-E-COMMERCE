@@ -23,19 +23,29 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        print(f">>> AUTH DEBUG: Decoding token...")
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
+            print(">>> AUTH DEBUG: Email is None in payload")
             raise credentials_exception
+        print(f">>> AUTH DEBUG: Email from token: {email}")
     except JWTError as e:
-        print(f"DEBUG AUTH: JWT DECODE ERROR - {str(e)}")
+        print(f">>> AUTH DEBUG: JWT DECODE ERROR - {str(e)}")
         raise credentials_exception
     
-    db = await get_database()
-    user = await db.users.find_one({"email": email})
-    if user is None:
-        raise credentials_exception
-    return user
+    try:
+        db = await get_database()
+        print(f">>> AUTH DEBUG: Searching for user {email} in DB...")
+        user = await db.users.find_one({"email": email})
+        if user is None:
+            print(f">>> AUTH DEBUG: User {email} not found in DB")
+            raise credentials_exception
+        print(f">>> AUTH DEBUG: User found: {user.get('email')}")
+        return user
+    except Exception as e:
+        print(f">>> AUTH DEBUG: DATABASE ERROR - {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Database error during auth: {str(e)}")
 
 def generate_otp(length=6):
     return ''.join(random.choices(string.digits, k=length))
@@ -187,10 +197,36 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         print(f"LOGIN CRITICAL ERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/me", response_model=UserOut)
+@router.get("/me")
+@router.get("/me/")
 async def read_users_me(current_user: dict = Depends(get_current_user)):
-    # Create a copy to avoid mutating the cached object if any
-    user_data = current_user.copy()
-    user_data["id"] = str(user_data["_id"])
-    user_data.pop("_id", None)
-    return user_data
+    try:
+        user_data = current_user.copy()
+        
+        # Convert ObjectId to string
+        if "_id" in user_data:
+            user_data["id"] = str(user_data["_id"])
+            user_data.pop("_id", None)
+        elif "id" not in user_data:
+            user_data["id"] = "unknown"
+        
+        # Inject defaults for any fields that may be missing in older records
+        user_data.setdefault("subscription_status", "none")
+        user_data.setdefault("plan", "Basic")
+        user_data.setdefault("phone", None)
+        user_data.setdefault("trial_start", None)
+        user_data.setdefault("trial_end", None)
+        user_data.setdefault("subscription_paid_at", None)
+        user_data.setdefault("store_slug", None)
+        user_data.setdefault("custom_domain", None)
+        
+        # Remove password hash from response
+        user_data.pop("password_hash", None)
+        user_data.pop("password", None)
+            
+        return user_data
+    except Exception as e:
+        print(f"ERROR IN /ME ENDPOINT: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"User profile error: {str(e)}")
