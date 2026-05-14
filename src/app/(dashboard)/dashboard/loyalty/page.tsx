@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { Award, Star, Zap, Gift, X, Loader2 } from "lucide-react";
 import { useMerchant } from "@/context/MerchantContext";
+import Link from "next/link";
 
 export default function LoyaltyPage() {
     const { activePlan } = useMerchant();

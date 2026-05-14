@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export type MerchantPlan = "Basic" | "Premium" | "Mobile App";
+export type MerchantPlan = "Basic" | "Premium" | "Mobile App" | "Enterprise";
 
 interface User {
     id: string;
@@ -15,6 +15,21 @@ interface User {
     subscription_status: string;
     trial_end?: string;
     subscription_paid_at?: string;
+}
+
+interface MerchantInfo {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    logo?: string;
+    business_type?: string;
+    description?: string;
+    address?: string;
+    status: string;
+    plan: string;
+    joined: string;
+    category: string;
 }
 
 interface MerchantContextType {
@@ -33,6 +48,7 @@ interface MerchantContextType {
     };
     isAuthenticated: boolean;
     refreshUser: () => Promise<void>;
+    merchantInfo: MerchantInfo | null;
 }
 
 const MerchantContext = createContext<MerchantContextType | undefined>(undefined);
@@ -41,6 +57,7 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [activePlan, setActivePlan] = useState<MerchantPlan>("Basic");
+    const [merchantInfo, setMerchantInfo] = useState<MerchantInfo | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -55,6 +72,11 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
         if (savedPlan) {
             setActivePlan(savedPlan as MerchantPlan);
         }
+
+        const savedMerchantInfo = localStorage.getItem("golalita_merchant_info");
+        if (savedMerchantInfo) {
+            setMerchantInfo(JSON.parse(savedMerchantInfo));
+        }
     }, []);
 
     const login = (newToken: string, userData: User) => {
@@ -64,13 +86,18 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem("golalita_token", newToken);
         localStorage.setItem("golalita_user", JSON.stringify(userData));
         localStorage.setItem("golalita_merchant_plan", userData.plan);
+        // Refresh merchant info after login
+        refreshMerchantInfo(newToken);
     };
 
     const logout = () => {
         setToken(null);
         setUser(null);
+        setMerchantInfo(null);
         localStorage.removeItem("golalita_token");
         localStorage.removeItem("golalita_user");
+        localStorage.removeItem("golalita_merchant_info");
+        localStorage.removeItem("golalita_merchant_plan");
         router.push("/login");
     };
 
@@ -96,11 +123,35 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
                 setActivePlan(userData.plan as MerchantPlan);
                 localStorage.setItem("golalita_user", JSON.stringify(userData));
                 localStorage.setItem("golalita_merchant_plan", userData.plan);
+                
+                // Also refresh merchant info
+                refreshMerchantInfo(token);
             }
         } catch (err) {
             console.error("REFRESH_USER_ERROR:", err);
         }
     };
+
+    const refreshMerchantInfo = async (authToken: string) => {
+        try {
+            const res = await fetch("/api/python/merchants/me", {
+                headers: { "Authorization": `Bearer ${authToken}` }
+            });
+            if (res.ok) {
+                const info = await res.json();
+                setMerchantInfo(info);
+                localStorage.setItem("golalita_merchant_info", JSON.stringify(info));
+            }
+        } catch (err) {
+            console.error("REFRESH_MERCHANT_INFO_ERROR:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (token && !merchantInfo) {
+            refreshMerchantInfo(token);
+        }
+    }, [token]);
 
     const subscriptionStatus = user?.subscription_status || "none";
     
@@ -129,7 +180,8 @@ export const MerchantProvider = ({ children }: { children: ReactNode }) => {
             logout,
             planLimits,
             isAuthenticated: !!token,
-            refreshUser
+            refreshUser,
+            merchantInfo
         }}>
             {children}
         </MerchantContext.Provider>

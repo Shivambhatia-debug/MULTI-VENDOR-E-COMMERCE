@@ -100,7 +100,7 @@ export default function MobileConfigsPage() {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setConfig(prev => ({ ...prev, logo_url: reader.result as string }));
+                setConfig((prev: any) => ({ ...prev, logo_url: reader.result as string }));
             };
             reader.readAsDataURL(file);
         }
@@ -480,7 +480,7 @@ export default function MobileConfigsPage() {
                                     ].map((theme) => (
                                         <button 
                                             key={theme.id}
-                                            onClick={() => setConfig(prev => ({...prev, theme: theme.id}))}
+                                            onClick={() => setConfig((prev: any) => ({...prev, theme: theme.id}))}
                                             className={`p-4 rounded-2xl border-2 text-left transition-all relative overflow-hidden group active:scale-95 hover:scale-[1.02] ${config?.theme === theme.id ? 'border-slate-950 bg-slate-950 text-white shadow-xl' : 'border-slate-100 bg-white hover:border-slate-200'}`}
                                         >
                                             <div className={`absolute -right-2 -bottom-2 w-16 h-16 rounded-full blur-2xl opacity-10 ${config?.theme === theme.id ? 'bg-blue-400' : 'bg-slate-900'}`} />
@@ -526,7 +526,7 @@ export default function MobileConfigsPage() {
                                             <input 
                                                 type="color" 
                                                 value={config?.primary_color}
-                                                onChange={(e) => setConfig(prev => ({...prev, primary_color: e.target.value}))}
+                                                onChange={(e) => setConfig((prev: any) => ({...prev, primary_color: e.target.value}))}
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                                             />
                                             <div className="relative flex items-center justify-between p-4 md:p-5 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 transition-all shadow-sm">
@@ -553,7 +553,7 @@ export default function MobileConfigsPage() {
                                             <input 
                                                 type="color" 
                                                 value={config?.accent_color}
-                                                onChange={(e) => setConfig(prev => ({...prev, accent_color: e.target.value}))}
+                                                onChange={(e) => setConfig((prev: any) => ({...prev, accent_color: e.target.value}))}
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                                             />
                                             <div className="relative flex items-center justify-between p-4 md:p-5 bg-white border border-slate-100 rounded-2xl hover:border-slate-950 transition-all shadow-sm">
@@ -623,7 +623,7 @@ export default function MobileConfigsPage() {
                                     <div className="flex items-center gap-3">
                                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Service Active</span>
                                         <button 
-                                            onClick={() => setConfig(prev => ({...prev, notifications_enabled: !prev?.notifications_enabled}))}
+                                            onClick={() => setConfig((prev: any) => ({...prev, notifications_enabled: !prev?.notifications_enabled}))}
                                             className={`w-12 h-6 rounded-full relative transition-all duration-500 ${config?.notifications_enabled ? 'bg-blue-600' : 'bg-slate-200'}`}
                                         >
                                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-500 ${config?.notifications_enabled ? 'left-7 shadow-lg' : 'left-1'}`} />
