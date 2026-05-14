@@ -88,7 +88,7 @@ export default function Dashboard() {
         <div className="min-h-screen bg-slate-50 flex">
             <Sidebar />
 
-            <main className="flex-1 p-6 lg:p-8 relative">
+            <main className="flex-1 p-4 md:p-6 lg:p-8 relative">
                 {activePlan === "Basic" && (
                     <BasicPlanHeader
                         plan={activePlan}

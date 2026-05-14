@@ -121,7 +121,7 @@ const MiniChart = ({ data, color }: { data: number[], color: string }) => (
 );
 
 const PackageCard = ({ title, price, features, color, best_for }: any) => (
-    <div className={`mt-4 p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-2xl backdrop-blur-xl relative overflow-hidden group`}>
+    <div className={`mt-4 p-5 md:p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-2xl backdrop-blur-xl relative overflow-hidden group w-full max-w-[320px] mx-auto md:mx-0`}>
         <div className="absolute top-0 right-0 p-4">
             <div className={`px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest bg-white/5 ${color} border border-white/5`}>
                 {title === "Premium Plan" ? "Popular" : "Active"}
@@ -326,7 +326,7 @@ export default function Support() {
             <NeuralBackground />
             
             {/* Cleaner Header */}
-            <header className="border-b border-white/5 bg-[#020617]/80 backdrop-blur-xl py-4 px-10 flex items-center justify-between sticky top-0 z-50">
+            <header className="border-b border-white/5 bg-[#020617]/80 backdrop-blur-xl py-4 px-4 md:px-10 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-4">
                     <img src={AI_LOGO} alt="Golalita" className="h-10 w-10 object-contain" />
                     <div>
@@ -403,20 +403,20 @@ export default function Support() {
                 <section className="flex-1 flex flex-col relative bg-transparent">
                     <div 
                         ref={scrollRef}
-                        className="flex-1 overflow-y-auto p-10 space-y-10 relative z-10"
+                        className="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 md:space-y-10 relative z-10"
                     >
                         {messages.map((msg, i) => (
                             <div 
                                 key={i} 
                                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                             >
-                                <div className={`flex gap-5 max-w-[80%] md:max-w-[65%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                                <div className={`flex gap-3 md:gap-5 max-w-[95%] md:max-w-[85%] lg:max-w-[65%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                                     {msg.role !== 'user' && (
-                                        <div className={`h-10 w-10 shrink-0 rounded-xl ${msg.color || 'bg-white/5'} border border-white/5 flex items-center justify-center shadow-lg shadow-indigo-500/5`}>
-                                            <msg.icon size={18} className={msg.textColor || "text-white"} />
+                                        <div className={`h-8 w-8 md:h-10 md:w-10 shrink-0 rounded-xl ${msg.color || 'bg-white/5'} border border-white/5 flex items-center justify-center shadow-lg shadow-indigo-500/5`}>
+                                            <msg.icon size={16} className={msg.textColor || "text-white"} />
                                         </div>
                                     )}
-                                    <div className={`${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white/[0.04] border border-white/5 text-slate-200'} p-6 rounded-2xl ${msg.role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none shadow-sm backdrop-blur-sm'}`}>
+                                    <div className={`${msg.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white/[0.04] border border-white/5 text-slate-200'} p-4 md:p-6 rounded-2xl ${msg.role === 'user' ? 'rounded-tr-none' : 'rounded-tl-none shadow-sm backdrop-blur-sm'} w-full`}>
                                         {msg.agent_name && (
                                             <div className="flex items-center gap-3 mb-2">
                                                 <span className={`text-[9px] font-bold uppercase tracking-[0.2em] ${msg.textColor || 'text-slate-500'}`}>{msg.agent_name}</span>
@@ -428,7 +428,7 @@ export default function Support() {
 
                                         {/* Actionable Components */}
                                         {msg.metadata?.type === 'package_card' && (
-                                            <div className="grid grid-cols-1 gap-4 mt-2">
+                                            <div className="flex flex-col gap-4 mt-2">
                                                 <PackageCard 
                                                     title={msg.metadata.plan?.title || "Premium Plan"}
                                                     price={msg.metadata.plan?.price || "4500 QAR"}
@@ -466,7 +466,7 @@ export default function Support() {
                     </div>
 
                     {/* Controls */}
-                    <div className="p-10 bg-[#020617]/80 border-t border-white/5 backdrop-blur-3xl relative z-20">
+                    <div className="p-4 md:p-10 bg-[#020617]/80 border-t border-white/5 backdrop-blur-3xl relative z-20">
                         <div className="flex flex-wrap gap-2 mb-6">
                             {role === "admin" ? (
                                 ["Merchant Queue", "Global Revenue", "System Logs", "Revenue Audit"].map((btn) => (

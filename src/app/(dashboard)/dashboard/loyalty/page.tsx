@@ -115,7 +115,7 @@ export default function LoyaltyPage() {
     return (
         <div className="min-h-screen bg-slate-50 flex">
             <Sidebar />
-            <main className="flex-1 p-6 lg:p-8">
+            <main className="flex-1 p-4 md:p-6 lg:p-8 relative">
                 <div className="flex justify-between items-center mb-10">
                     <div>
                         <h1 className="text-xl font-bold text-slate-900 tracking-tight uppercase">Loyalty & Rewards</h1>
@@ -215,7 +215,7 @@ export default function LoyaltyPage() {
             {/* Rule Modal */}
             {isRuleModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="mt-4 p-5 md:p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-2xl backdrop-blur-xl relative overflow-hidden group w-full max-w-[320px] animate-in fade-in zoom-in duration-200">
                         <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                             <h2 className="text-sm font-black uppercase tracking-widest text-slate-900">Configure Rule</h2>
                             <button onClick={() => setIsRuleModalOpen(false)} className="text-slate-400 hover:text-slate-600">
@@ -270,7 +270,7 @@ export default function LoyaltyPage() {
                                     placeholder="e.g. QAR 50 Discount"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-4 mt-2">
                                 <div>
                                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Points Required</label>
                                     <input 

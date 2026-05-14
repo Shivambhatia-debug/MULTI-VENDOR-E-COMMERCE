@@ -80,7 +80,7 @@ export default function OrdersPage() {
         <div className="min-h-screen bg-slate-50 flex">
             <Sidebar />
 
-            <main className="flex-1 p-6 lg:p-8">
+            <main className="flex-1 p-4 md:p-6 lg:p-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
                     <div>
