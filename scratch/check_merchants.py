@@ -1,27 +1,18 @@
 import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
-import sys
 
-# Add backend to path
-sys.path.append(os.path.join(os.getcwd()))
-
-from app.database import get_database, connect_to_mongo
-from app.config import settings
-
-async def check():
-    print(f"Connecting to {settings.DATABASE_NAME}...")
-    await connect_to_mongo()
-    db = await get_database()
-    users = await db.users.find({"role": "merchant"}).to_list(None)
-    print(f"MERCHANTS_COUNT: {len(users)}")
-    for u in users:
-        print(f"MERCHANT: {u.get('email')} - Plan: {u.get('plan')} - Status: {u.get('subscription_status')}")
+async def check_merchants():
+    client = AsyncIOMotorClient("mongodb+srv://shivambhatia:Shiva%408053@cluster0.88cy4is.mongodb.net/")
+    db = client.shivambhatia
     
-    # Also check plans
-    plans = await db.plans.find({}).to_list(None)
-    print(f"PLANS_COUNT: {len(plans)}")
-    for p in plans:
-        print(f"PLAN: {p.get('name')} - Price: {p.get('price')}")
+    print("--- MERCHANTS ---")
+    async for user in db.users.find({"role": "merchant"}):
+        print(f"ID: {user['_id']}, Name: {user.get('name')}, Email: {user.get('email')}, Slug: {user.get('store_slug')}, Domain: {user.get('custom_domain')}")
+        
+    print("\n--- STORE CONFIGS ---")
+    async for config in db.store_configs.find():
+        print(f"MerchantID: {config.get('merchant_id')}, Subdomain: {config.get('subdomain')}, Custom: {config.get('custom_domain')}")
 
 if __name__ == "__main__":
-    asyncio.run(check())
+    asyncio.run(check_merchants())
